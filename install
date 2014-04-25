@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+./copynew
+cd /usr/src/tools
+make install
+
+
