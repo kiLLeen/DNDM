@@ -1,7 +1,0 @@
-make github repository
-determine what files and procedures to modify
-write design doc
-implement lottery scheduler and way to adjust tickets dynamically
-develop testing strategy
-write test programs/scripts
-test, write up test report w/ lottery and minix default scheduler
