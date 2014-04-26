@@ -1,10 +1,10 @@
 /* This file contains some utility routines for SCHED.
  *
  * The entry points are:
- *   no_sys:		called for invalid system call numbers
- *   sched_isokendpt:	check the validity of an endpoint
+ *   no_sys:    called for invalid system call numbers
+ *   sched_isokendpt:  check the validity of an endpoint
  *   sched_isemtyendpt  check for validity and availability of endpoint slot
- *   accept_message	check whether message is allowed
+ *   accept_message  check whether message is allowed
  *   ticket_count: return the total number of tickets that have been given to processes
  */
 
@@ -15,7 +15,7 @@
 #include "schedproc.h"
 
 /*===========================================================================*
- *				no_sys					     *
+ *        no_sys               *
  *===========================================================================*/
 PUBLIC int no_sys(int who_e, int call_nr)
 {
@@ -26,58 +26,58 @@ PUBLIC int no_sys(int who_e, int call_nr)
 
 
 /*===========================================================================*
- *				sched_isokendpt			 	     *
+ *        sched_isokendpt              *
  *===========================================================================*/
 PUBLIC int sched_isokendpt(int endpoint, int *proc)
 {
-	*proc = _ENDPOINT_P(endpoint);
-	if (*proc < 0)
-		return (EBADEPT); /* Don't schedule tasks */
-	if(*proc >= NR_PROCS)
-		return (EINVAL);
-	if(endpoint != schedproc[*proc].endpoint)
-		return (EDEADEPT);
-	if(!(schedproc[*proc].flags & IN_USE))
-		return (EDEADEPT);
-	return (OK);
+  *proc = _ENDPOINT_P(endpoint);
+  if (*proc < 0)
+    return (EBADEPT); /* Don't schedule tasks */
+  if(*proc >= NR_PROCS)
+    return (EINVAL);
+  if(endpoint != schedproc[*proc].endpoint)
+    return (EDEADEPT);
+  if(!(schedproc[*proc].flags & IN_USE))
+    return (EDEADEPT);
+  return (OK);
 }
 
 /*===========================================================================*
- *				sched_isemtyendpt		 	     *
+ *        sched_isemtyendpt            *
  *===========================================================================*/
 PUBLIC int sched_isemtyendpt(int endpoint, int *proc)
 {
-	*proc = _ENDPOINT_P(endpoint);
-	if (*proc < 0)
-		return (EBADEPT); /* Don't schedule tasks */
-	if(*proc >= NR_PROCS)
-		return (EINVAL);
-	if(schedproc[*proc].flags & IN_USE)
-		return (EDEADEPT);
-	return (OK);
+  *proc = _ENDPOINT_P(endpoint);
+  if (*proc < 0)
+    return (EBADEPT); /* Don't schedule tasks */
+  if(*proc >= NR_PROCS)
+    return (EINVAL);
+  if(schedproc[*proc].flags & IN_USE)
+    return (EDEADEPT);
+  return (OK);
 }
 
 /*===========================================================================*
- *				accept_message				     *
+ *        accept_message             *
  *===========================================================================*/
 PUBLIC int accept_message(message *m_ptr)
 {
-	/* accept all messages from PM and RS */
-	switch (m_ptr->m_source) {
+  /* accept all messages from PM and RS */
+  switch (m_ptr->m_source) {
 
-		case PM_PROC_NR:
-		case RS_PROC_NR:
-			return 1;
-			
-	}
-	
-	/* no other messages are allowable */
-	return 0;
+    case PM_PROC_NR:
+    case RS_PROC_NR:
+      return 1;
+      
+  }
+  
+  /* no other messages are allowable */
+  return 0;
 }
 
 /* CHANGE START */
 /*===========================================================================*
- * name: ticket_count				                                                 *
+ * name: ticket_count                                                         *
  * parameters: none                                                          *
  * retuns: the number of tickets that have been distributed to the processes *
  * intended action: see "returns"                                            *
