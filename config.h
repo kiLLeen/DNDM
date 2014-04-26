@@ -1,3 +1,5 @@
+/* MODIFIED 4-25-14 */
+
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
@@ -32,7 +34,7 @@
  *
  * These can be changed in sys_config.h.
  */
-#define NR_PROCS      _NR_PROCS 
+#define NR_PROCS          _NR_PROCS 
 #define NR_SYS_PROCS      _NR_SYS_PROCS
 #define NR_SYS_CHUNKS     BITMAP_CHUNKS(NR_SYS_PROCS)
 
@@ -56,7 +58,7 @@
 /* NR_CONS, NR_RS_LINES, and NR_PTYS determine the number of terminals the
  * system can handle.
  */
-#define NR_CONS            4    /* # system consoles (1 to 8) */
+#define NR_CONS        4    /* # system consoles (1 to 8) */
 #define NR_RS_LINES    4    /* # rs232 terminals (0 to 4) */
 #define NR_PTYS        32   /* # pseudo terminals (0 to 64) */
 
@@ -75,13 +77,20 @@
 /* Scheduling priorities. Values must start at zero (highest
  * priority) and increment.
  */
-#define NR_SCHED_QUEUES   16    /* MUST equal minimum priority + 1 */
+/* CHANGE START */
+/* changed from 16 to 17 */
+#define NR_SCHED_QUEUES   17    /* MUST equal minimum priority + 1 */
+/* CHANGE END */
 #define TASK_Q         0    /* highest, used for kernel tasks */
 #define MAX_USER_Q         0    /* highest priority for user processes */   
 #define USER_Q        ((MIN_USER_Q - MAX_USER_Q) / 2 + MAX_USER_Q) /* default
                         (should correspond to nice 0) */
-#define MIN_USER_Q    (NR_SCHED_QUEUES - 1) /* minimum priority for user
+/* CHANGE START */
+/* changed from (NR_SCHED_QUEUES - 1) to (NR_SCHED_QUEUES - 2) */
+/* 15 is still idle, 16 is holding area */
+#define MIN_USER_Q    (NR_SCHED_QUEUES - 2) /* minimum priority for user
                            processes */
+/* CHANGE END */
 /* default scheduling quanta */
 #define USER_QUANTUM 200
 
