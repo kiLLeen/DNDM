@@ -5,7 +5,6 @@
  *   sched_isokendpt:  check the validity of an endpoint
  *   sched_isemtyendpt  check for validity and availability of endpoint slot
  *   accept_message  check whether message is allowed
- *   ticket_count: return the total number of tickets that have been given to processes
  */
 
 #include "sched.h"
@@ -74,26 +73,3 @@ PUBLIC int accept_message(message *m_ptr)
   /* no other messages are allowable */
   return 0;
 }
-
-/* CHANGE START */
-/*===========================================================================*
- * name: ticket_count                                                         *
- * parameters: none                                                          *
- * retuns: the number of tickets that have been distributed to the processes *
- * intended action: see "returns"                                            *
- * assumptions: none                                                         *
- *===========================================================================*/
-PUBLIC int ticket_count()
-{
-  register struct schedproc *rmp;
-  int total = 0; /* the total number of tickets */
-  int i = 0;
-  
-  for (; i < NR_PROCS ; ++i) {
-    rmp = &schedproc[proc_nr_n];
-    total += rmp -> tickets;
-  }
-  
-  return total;
-}
-/* CHANGE END */ 
