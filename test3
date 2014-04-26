@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+echo Test 3 - Three CPU bound tasks, with 25, 50, and 100 tickets
+echo They should have runtimes of a similar ratio
+#
+time ./cpu 2500000 5 &
+time ./cpu 2500000 30 &
+time ./cpu 2500000 80 &
+
+
