@@ -1,4 +1,5 @@
-/* This file contains the scheduling policy for SCHED
+/* CHANGED - 4/26/14
+ * This file contains the scheduling policy for SCHED
  *
  * The entry points are:
  *   do_noquantum:        Called on behalf of process' that run out of quantum
@@ -18,14 +19,71 @@ PRIVATE timer_t sched_timer;
 PRIVATE unsigned balance_timeout;
 
 #define BALANCE_TIMEOUT 5 /* how often to balance queues in seconds */
+/* CHANGE START */
+#define STARTING_TICKETS 20 /* the number of tickets each process starts with */
+#define MAX_TICKETS 100 /* the max number of tickets a process can have (nice can change) */
+#define MIN_TICKETS 1   /* the min number of tickets a process can have */
+/* CHANGE END */
 
 FORWARD _PROTOTYPE( int schedule_process, (struct schedproc * rmp)  );
 FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)     );
 
 #define DEFAULT_USER_TIME_SLICE 200
 
+/* CHANGE START */
 /*===========================================================================*
- *              do_noquantum                     *
+ * name: ticket_count                                                         *
+ * parameters: none                                                          *
+ * retuns: the number of tickets that have been distributed to the processes *
+ * intended action: see "returns"                                            *
+ * assumptions: none                                                         *
+ *===========================================================================*/
+PUBLIC int ticket_count()
+{
+    register struct schedproc *rmp;
+    int total = 0; /* the total number of tickets */
+    int i = 0;
+  
+    for (; i < NR_PROCS ; ++i) {
+        rmp = &schedproc[proc_nr_n];
+        /* Confirm the process exists. If it doesn't the tickets should 
+           already be 0 but just in case. */
+        if (rmp->flags & IN_USE) {
+            total += rmp -> tickets;
+        }
+    }
+
+    return total;
+}
+
+/*=============================================================================*
+ * name: lottery                                                               *
+ * parameters: none                                                            *
+ * retuns: the index of the process in schedproc who won the lotter            *
+ * intended action: to select a process to schedule probabaliticly via lottery *
+ * assumptions: every process has at least one ticket                          *
+ *=============================================================================*/
+PRIVATE size_t lottery()
+{
+    int selection = 42 % ticket_count(); /* TODO replace 42 with the random number generated via dave's method */ /* ticket# 0 to X-1 where X is total number of tickets. */
+    size_t winning_process = 0; /* index of the winner in the process table */
+    register struct schedproc *rmp;
+
+    /* subtract off the number of tickects the process' have until 
+       the selection is found */
+    do {
+        rmp = &schedproc[winning_process++];
+        if (rmp->flags & IN_USE) {
+            selection -= rmp -> tickets; 
+        }
+    } while (selection >= 0);
+
+    return (winning_process - 1);
+}
+/* CHANGE END */
+
+/*===========================================================================*
+ *              do_noquantum                     *TODO Call lottery() 
  *===========================================================================*/
 
 PUBLIC int do_noquantum(message *m_ptr)
@@ -70,6 +128,9 @@ PUBLIC int do_stop_scheduling(message *m_ptr)
 
     rmp = &schedproc[proc_nr_n];
     rmp->flags = 0; /*&= ~IN_USE;*/
+/* CHANGE START */
+    rmp->tickets = 0; /* free up the tickets so they aren't miscounted */
+/* CHANGE END */
 
     return OK;
 }
@@ -101,6 +162,10 @@ PUBLIC int do_start_scheduling(message *m_ptr)
     rmp->endpoint     = m_ptr->SCHEDULING_ENDPOINT;
     rmp->parent       = m_ptr->SCHEDULING_PARENT;
     rmp->max_priority = (unsigned) m_ptr->SCHEDULING_MAXPRIO;
+/* CHANGE START */
+    rmp->tickets      = STARTING_TICKETS;
+    rmp->max_tickets  = MAX_TICKETS;
+/* CHANGE END */
     if (rmp->max_priority >= NR_SCHED_QUEUES) {
         return EINVAL;
     }
@@ -161,7 +226,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 }
 
 /*===========================================================================*
- *              do_nice                      *
+ *              do_nice                      *TODO: ticket stuff
  *===========================================================================*/
 PUBLIC int do_nice(message *m_ptr)
 {
