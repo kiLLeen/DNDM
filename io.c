@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
         printf("Error calling nice()\n");
         return 1;
     }
-    printf("Process %d at nice %d\n", process_id, nice_val);
 
     read_tsc_64(&s);
     for (i = 1; i<iters; ++i) {

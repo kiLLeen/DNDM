@@ -27,8 +27,6 @@ EXTERN struct schedproc {
     unsigned time_slice;        /* this process's time slice */
 /* CHANGE START */
     unsigned tickets;         /* the number of tickets this process has */
-                              /* this is changed by do_noquantum when requeued */
-    unsigned max_tickets;     /* the maximum number of tickets, set via do_start_process */
 /* CHANGE END */
 } schedproc[NR_PROCS];
 

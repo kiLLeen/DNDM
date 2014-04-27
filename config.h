@@ -78,19 +78,18 @@
  * priority) and increment.
  */
 /* CHANGE START */
-/* changed from 16 to 17 */
-#define NR_SCHED_QUEUES   17    /* MUST equal minimum priority + 1 */
+/* changed from 16 */
+#define NR_SCHED_QUEUES   19    /* MUST equal minimum priority + 1 */
 /* CHANGE END */
 #define TASK_Q         0    /* highest, used for kernel tasks */
-#define MAX_USER_Q         0    /* highest priority for user processes */   
+/* CHANGE START */
+/* changed from 0 */
+#define MAX_USER_Q         16    /* highest priority for user processes */   
+/* CHANGE END */
 #define USER_Q        ((MIN_USER_Q - MAX_USER_Q) / 2 + MAX_USER_Q) /* default
                         (should correspond to nice 0) */
-/* CHANGE START */
-/* changed from (NR_SCHED_QUEUES - 1) to (NR_SCHED_QUEUES - 2) */
-/* 15 is still idle, 16 is holding area */
-#define MIN_USER_Q    (NR_SCHED_QUEUES - 2) /* minimum priority for user
+#define MIN_USER_Q    (NR_SCHED_QUEUES - 1) /* minimum priority for user
                            processes */
-/* CHANGE END */
 /* default scheduling quanta */
 #define USER_QUANTUM 200
 
