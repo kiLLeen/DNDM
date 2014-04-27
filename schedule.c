@@ -46,7 +46,11 @@ PUBLIC int ticket_count()
   
     for (; i < NR_PROCS ; ++i) {
         rmp = &schedproc[proc_nr_n];
-        total += rmp -> tickets;
+        /* Confirm the process exists. If it doesn't the tickets should 
+           already be 0 but just in case. */
+        if (rmp->flags & IN_USE) {
+            total += rmp -> tickets;
+        }
     }
 
     return total;
@@ -54,12 +58,12 @@ PUBLIC int ticket_count()
 
 /*=============================================================================*
  * name: lottery                                                               *
- * parameters: m_ptr - a message                                               *
+ * parameters: none                                                            *
  * retuns: the index of the process in schedproc who won the lotter            *
  * intended action: to select a process to schedule probabaliticly via lottery *
  * assumptions: every process has at least one ticket                          *
  *=============================================================================*/
-PRIVATE size_t lottery(message *m_ptr)
+PRIVATE size_t lottery()
 {
     int selection = 42 % ticket_count(); /* TODO replace 42 with the random number generated via dave's method */ /* ticket# 0 to X-1 where X is total number of tickets. */
     size_t winning_process = 0; /* index of the winner in the process table */
@@ -69,7 +73,9 @@ PRIVATE size_t lottery(message *m_ptr)
        the selection is found */
     do {
         rmp = &schedproc[winning_process++];
-        selection -= rmp -> tickets; 
+        if (rmp->flags & IN_USE) {
+            selection -= rmp -> tickets; 
+        }
     } while (selection >= 0);
 
     return (winning_process - 1);
