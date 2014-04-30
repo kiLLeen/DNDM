@@ -31,4 +31,7 @@ EXTERN struct schedproc {
 } schedproc[NR_PROCS];
 
 /* Flag values */
-#define IN_USE      0x00001 /* set when 'schedproc' slot in use */
+#define IN_USE          0x00001 /* set when 'schedproc' slot in use */
+/* CHANGE START */
+#define USER_PROCESS    0x0002  /* set when used by user lottery scheduler */
+/* CHANGE END */
