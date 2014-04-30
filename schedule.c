@@ -20,7 +20,11 @@
 #define HOLDING_Q       (MIN_USER_Q)
                         /* this should be the queue in which processes are in
                            when they have not won the lottery */
-#define WINNING_Q       (HOLDING_Q - 1)
+#define MIDDLE_Q        (HOLDING_Q - 1)
+                        /* this should be the queue in which processes are in
+                           when they HAVE won the lottery, but have run out of
+                           quantum (cpu bound) */
+#define WINNING_Q       (HOLDING_Q - 2)
                         /* this should be the queue in which processes are in
                            when they HAVE won the lottery */
 #define STARTING_TICKETS 20 /* the number of tickets each process starts with */
@@ -94,6 +98,7 @@ PRIVATE void change_tickets(struct schedproc *rmp, int qty) {
         rmp->tickets = MAX_TICKETS;
     if (rmp->tickets < MIN_TICKETS)
         rmp->tickets = MIN_TICKETS;
+    printf("new tickets = %d", rmp->tickets);
 }
 
 /* CHANGE END */
@@ -117,18 +122,17 @@ PUBLIC int do_noquantum(message *m_ptr) {
     if (!(rmp->flags & USER_PROCESS) && rmp->priority < MIN_USER_Q) /* system process */ {
         rmp->priority++;
         printf("system proces ran out of quantum\n");
-    }
-    else if ((rmp->flags & USER_PROCESS) && rmp->priority == WINNING_Q) /* winner ran out of quantum */ {
-        rmp->priority = HOLDING_Q;
-        change_tickets(rmp_temp, -1);
+    } else if ((rmp->flags & USER_PROCESS) && rmp->priority == WINNING_Q) /* winner ran out of quantum */ {
+        rmp->priority = MIDDLE_Q;
         printf("winning process ran out of quantum\n");
-    }
-    else /* a process other than a winning process ran out of quantum. this means that
+    } else /* a process other than a winning process ran out of quantum. this means that
               the winning processe(s) are IO bound, so increase their tickets */
         if (rmp->flags & USER_PROCESS) {
             for (proc_nr_n = 0, rmp_temp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp_temp)
-                if (rmp_temp->priority == WINNING_Q && rmp_temp->flags == (IN_USE | USER_PROCESS))
+                if (rmp_temp->priority != HOLDING_Q && rmp_temp->flags == (IN_USE | USER_PROCESS)) {
                     change_tickets(rmp_temp, 1);
+                    printf("Adding 1 ticket to process %d\n", proc_nr_n);
+                }
             printf("IO bound process detected, Adding tickets to WINNING process\n");
         }
 
