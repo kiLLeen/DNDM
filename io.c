@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     }
 
     read_tsc_64(&s);
-    for (j = 1; j < 20; ++j) {
+    for (j = 1; j <= 20; ++j) {
         for (i = 1; i<iters/20; ++i) {
             infile = fopen("proc.c", "rb");
             /* this only writes the current block, but is sufficient for testing purposes */
