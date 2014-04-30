@@ -64,6 +64,6 @@ int main(int argc, char *argv[]) {
     diff = sub64(e, s);
     max = -1;
     elapsed = (double)diff.hi + (double)(diff.lo/100000) / (double)(max/100000);
-    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -4 * sum, elapsed);
+    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -4/20 * sum, elapsed);
     return 0;
 }
