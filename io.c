@@ -6,8 +6,6 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#include <time.h>
-
 extern void read_tsc_64(u64_t* t);
 extern int atoi(char* str);
 extern u64_t sub64(u64_t s, u64_t t);
@@ -51,8 +49,8 @@ int main(int argc, char *argv[]) {
     }
 
     read_tsc_64(&s);
-    for (k = 1; k <= 20; ++k) {
-        for (i = 1; i<iters/20; ++i) {
+    for (k = 1; k <= 10; ++k) {
+        for (i = 1; i<iters/10; ++i) {
             infile = fopen("proc.c", "rb");
             /* this only writes the current block, but is sufficient for testing purposes */
             outfile = fopen("test.txt", "wb");
@@ -70,7 +68,7 @@ int main(int argc, char *argv[]) {
                 checksum = 0;
             }
         }
-        printf("Process %d has completed %d percent of it's work.\n", process_id, k * 5);
+        printf("IO Process %d has completed %d percent of it's work.\n", process_id, k * 10);
     }
     read_tsc_64(&e);
     diff = sub64(e, s);

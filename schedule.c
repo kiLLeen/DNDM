@@ -55,10 +55,10 @@ PRIVATE int do_lottery() {
 
     /* count the total number of tickets in all processes */
     for (proc_nr = 0, rmp = schedproc; proc_nr < NR_PROCS; ++proc_nr, ++rmp)
-        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* can we win? */
+        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* winnable? */
             total_tickets += rmp->tickets;
     
-    if (!total_tickets)
+    if (!total_tickets) /* there were no winnable processes */
         return OK;
     
     /* generate a "random" winning ticket */
@@ -69,7 +69,7 @@ PRIVATE int do_lottery() {
 
     /* now find the process with the winning ticket */
     for (proc_nr = 0, rmp = schedproc; proc_nr < NR_PROCS; ++proc_nr, ++rmp) {
-        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* can we win? */
+        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* winnable? */
             winner -= rmp->tickets;
         if (winner <= 0)
             break;
@@ -114,16 +114,23 @@ PUBLIC int do_noquantum(message *m_ptr) {
 
     rmp = &schedproc[proc_nr_n];
 /* CHANGE START */
-    if (!(rmp->flags & USER_PROCESS) && rmp->priority < MIN_USER_Q) /* system process */
+    if (!(rmp->flags & USER_PROCESS) && rmp->priority < MIN_USER_Q) /* system process */ {
         rmp->priority++;
-    else if ((rmp->flags & USER_PROCESS) && rmp->priority == WINNING_Q) /* winner ran out of quantum */
+        printf("system proces ran out of quantum\n");
+    }
+    else if ((rmp->flags & USER_PROCESS) && rmp->priority == WINNING_Q) /* winner ran out of quantum */ {
         rmp->priority = HOLDING_Q;
+        change_tickets(rmp_temp, -1);
+        printf("winning process ran out of quantum\n");
+    }
     else /* a process other than a winning process ran out of quantum. this means that
               the winning processe(s) are IO bound, so increase their tickets */
-        if (rmp->flags & USER_PROCESS)
+        if (rmp->flags & USER_PROCESS) {
             for (proc_nr_n = 0, rmp_temp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp_temp)
                 if (rmp_temp->priority == WINNING_Q && rmp_temp->flags == (IN_USE | USER_PROCESS))
                     change_tickets(rmp_temp, 1);
+            printf("IO bound process detected, Adding tickets to WINNING process\n");
+        }
 
     if ((rv = schedule_process(rmp)) != OK) /* move process */
         return rv;
@@ -157,9 +164,9 @@ PUBLIC int do_stop_scheduling(message *m_ptr)
 /* CHANGE START */
     rmp->flags = 0; /* clear IN_USE and USER_PROCESS flags */
 
-    /* a process stopped, so we need to schedule a new one 
+    /* a process stopped, so we need to schedule a new one */
     if (rv = do_lottery() != OK)
-        return rv; */
+        return rv; 
 /* CHANGE START */
 
     return OK;
@@ -207,7 +214,6 @@ PUBLIC int do_start_scheduling(message *m_ptr)
              * from the parent */
             rmp->priority   = rmp->max_priority;
             rmp->time_slice = (unsigned) m_ptr->SCHEDULING_QUANTUM;
-            /*printf("Starting kernel process %d\n", proc_nr_n);*/
             break;
         
         case SCHEDULING_INHERIT:
@@ -219,10 +225,8 @@ PUBLIC int do_start_scheduling(message *m_ptr)
                 return rv;
 
 /* CHANGE START */
-            /*printf("Starting user process %d\n", proc_nr_n);*/
             rmp->priority = HOLDING_Q;
             rmp->flags |= USER_PROCESS;
-            /*rmp->time_slice = USER_QUANTUM;*/
 /* CHANGE END */
             rmp->time_slice = schedproc[parent_nr_n].time_slice;
             break;
@@ -271,9 +275,6 @@ PUBLIC int do_nice(message *m_ptr)
     int rv;
     int proc_nr_n;
     unsigned new_q, old_q, old_max_q;
-/* CHANGE START */
-    int new_tickets;
-/* CHANGE END */
 
     /* check who can send you requests */
     if (!accept_message(m_ptr))

@@ -3,5 +3,5 @@
 echo Test 4 - Two CPU bound tasks, with 1 and 100 tickets
 echo The process with 1 ticket should still run 
 #
-time ./cpu 2500000 -19 &
-time ./cpu 2500000 80 &
+time ./cpu 7000000 -19 &
+time ./cpu 7000000 80 &

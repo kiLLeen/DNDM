@@ -6,9 +6,6 @@
 #include <sys/types.h>
 #include <errno.h>
 
-#include <sys/resource.h>
-#include <time.h>
-
 extern void read_tsc_64(u64_t* t);
 extern int atoi(char* str);
 extern u64_t sub64(u64_t s, u64_t t);
@@ -48,22 +45,21 @@ int main(int argc, char *argv[]) {
     }
 
     read_tsc_64(&s);
-    for (j = 1; j <= 20; ++j) {
-        for (i = 1; i<iters/20; ++i) {
+    for (j = 1; j <= 10; ++j) {
+        for (i = 1; i<iters/10; ++i) {
             denom = 2 * i - 1;
-            numer;
             if (i % 2)
                 numer = -1;
             else
                 numer = 1;
             sum += ((double)numer / (double)denom);
         }
-        printf("Process %d has completed %d percent of it's work.\n", process_id, j * 5);
+        printf("CPU Process %d has completed %d percent of it's work.\n", process_id, j * 10);
     }
     read_tsc_64(&e);
     diff = sub64(e, s);
     max = -1;
     elapsed = (double)diff.hi + (double)(diff.lo/100000) / (double)(max/100000);
-    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -4/20 * sum, elapsed);
+    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -0.2 * sum, elapsed);
     return 0;
 }
