@@ -25,12 +25,9 @@ int main(int argc, char *argv[]) {
     /* argument 2 is the argument to nice() */
 
     /* PI = 4 * (1/1 - 1/3 + 1/5 - 1/7 + 1/9 - 1/11 ...) */
-    int i;
+    int i,j;
     double sum = 0;
     int denom, numer;
-    time_t current;
-    time_t start = time(NULL);
-    int seconds = 0;
     pid_t process_id = getpid();
     int retval, nice_val, iters;
     u64_t s,e,diff;
@@ -49,24 +46,19 @@ int main(int argc, char *argv[]) {
         printf("Error calling nice()\n");
         return 1;
     }
-    printf("Process %d at nice %d\n", process_id, nice_val);
 
     read_tsc_64(&s);
-    for (i = 1; i<iters; ++i) {
-        denom = 2 * i - 1;
-        numer;
-        if (i % 2)
-            numer = -1;
-        else
-            numer = 1;
-        sum += ((double)numer / (double)denom);
-        current = time(NULL);
-        if (current - start > seconds) {
-            seconds = current - start;
-            printf("Process %d has been running for %d seconds.\n", process_id, seconds);
-            /*if (seconds == 10)
-                break;*/
+    for (j = 1; j <= 20; ++j) {
+        for (i = 1; i<iters/20; ++i) {
+            denom = 2 * i - 1;
+            numer;
+            if (i % 2)
+                numer = -1;
+            else
+                numer = 1;
+            sum += ((double)numer / (double)denom);
         }
+        printf("Process %d has completed %d percent of it's work.\n", process_id, j * 5);
     }
     read_tsc_64(&e);
     diff = sub64(e, s);

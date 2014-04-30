@@ -1,3 +1,5 @@
+/* MODIFIED 4-25-14 */
+
 /* This file contains the main program of MINIX as well as its shutdown code.
  * The routine main() initializes the system and starts the ball rolling by
  * setting up the process table, interrupt vectors, and scheduling each task 
@@ -295,7 +297,9 @@ PRIVATE void announce(void)
       "Copyright 2010, Vrije Universiteit, Amsterdam, The Netherlands\n",
       OS_RELEASE, OS_VERSION);
   printf("MINIX is open source software, see http://www.minix3.org\n");
+/* CHANGE START */
   printf("MODIFIED FOR LOTTERY SCHEDULER\n");
+/* CHANGE END */
 }
 
 /*===========================================================================*

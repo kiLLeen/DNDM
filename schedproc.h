@@ -1,5 +1,6 @@
-/* CHANGED - 4/26/14
- * This table has one slot per process.  It contains scheduling information
+/* MODIFIED 4-25-14 */
+
+/* This table has one slot per process.  It contains scheduling information
  * for each process.
  */
 #include <limits.h>
@@ -25,10 +26,12 @@ EXTERN struct schedproc {
     unsigned priority;      /* the process' current priority */
     unsigned time_slice;        /* this process's time slice */
 /* CHANGE START */
-    unsigned max_tickets;   /* the maximum ammount of tickets this process can have */
-    unsigned tickets;       /* this process's tickets for the lottery */
+    unsigned tickets;         /* the number of tickets this process has */
 /* CHANGE END */
 } schedproc[NR_PROCS];
 
 /* Flag values */
-#define IN_USE      0x00001 /* set when 'schedproc' slot in use */
+#define IN_USE          0x00001 /* set when 'schedproc' slot in use */
+/* CHANGE START */
+#define USER_PROCESS    0x0002  /* set when used by user lottery scheduler */
+/* CHANGE END */

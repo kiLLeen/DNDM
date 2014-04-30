@@ -25,9 +25,6 @@ int main(int argc, char *argv[]) {
     /* argument 1 is the number of iterations to run */
     /* argument 2 is the argument to nice() */
     int i, j;
-    time_t current;
-    time_t start = time(NULL);
-    int seconds = 0;
     pid_t process_id = getpid();
     FILE * infile, * outfile;
     char buff[1025];
@@ -52,33 +49,28 @@ int main(int argc, char *argv[]) {
         printf("Error calling nice()\n");
         return 1;
     }
-    printf("Process %d at nice %d\n", process_id, nice_val);
 
     read_tsc_64(&s);
-    for (i = 1; i<iters; ++i) {
-        infile = fopen("proc.c", "rb");
-        /* this only writes the current block, but is sufficient for testing purposes */
-        outfile = fopen("test.txt", "wb");
-        err = fseek(infile, block * 1024, SEEK_SET);
-        fseek(outfile, block * 1024, SEEK_SET);
-        count = fread(buff, 1, 1024, infile);
-        for (j = 0; j < count; ++j)
-            checksum += buff[j];
-        count2 = fwrite(buff, 1, count, outfile);
-        fclose(infile);
-        fclose(outfile);
-        block++;
-        if (count < 1024) {
-            block = 0;
-            checksum = 0;
+    for (j = 1; j <= 20; ++j) {
+        for (i = 1; i<iters/20; ++i) {
+            infile = fopen("proc.c", "rb");
+            /* this only writes the current block, but is sufficient for testing purposes */
+            outfile = fopen("test.txt", "wb");
+            err = fseek(infile, block * 1024, SEEK_SET);
+            fseek(outfile, block * 1024, SEEK_SET);
+            count = fread(buff, 1, 1024, infile);
+            for (j = 0; j < count; ++j)
+                checksum += buff[j];
+            count2 = fwrite(buff, 1, count, outfile);
+            fclose(infile);
+            fclose(outfile);
+            block++;
+            if (count < 1024) {
+                block = 0;
+                checksum = 0;
+            }
         }
-        current = time(NULL);
-        if (current - start > seconds) {
-            seconds = current - start;
-            printf("Process %d has been running for %d seconds.\n", process_id, seconds);
-            /*if (seconds == 10)
-                break;*/
-        }
+        printf("Process %d has completed %d percent of it's work.\n", process_id, j * 5);
     }
     read_tsc_64(&e);
     diff = sub64(e, s);
