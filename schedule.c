@@ -55,8 +55,14 @@ PRIVATE int do_lottery() {
 
     /* count the total number of tickets in all processes */
     for (proc_nr = 0, rmp = schedproc; proc_nr < NR_PROCS; ++proc_nr, ++rmp)
-        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* can we win? */
+        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* can we win? */ {
             total_tickets += rmp->tickets;
+            printf("process %d has %d tickets\n", proc_nr, rmp->tickets);
+        }
+    
+    if (!total_tickets)
+        return OK;
+    
     /* generate a "random" winning ticket */
     /* lower bits of time stamp counter are random enough */
     /*   and much faster then random() */
@@ -69,7 +75,7 @@ PRIVATE int do_lottery() {
             winner -= rmp->tickets;
         if (winner <= 0)
             break;
-    }
+   }
 
     printf("Process %d won with %d of %d tickets\n", proc_nr, rmp->tickets, total_tickets);
     /* schedule new winning process */
@@ -111,16 +117,18 @@ PUBLIC int do_noquantum(message *m_ptr) {
     rmp = &schedproc[proc_nr_n];
 /* CHANGE START */
     if (!(rmp->flags & USER_PROCESS) && rmp->priority < MIN_USER_Q) /* system process */
-        rmp->priority++; 
+        ;/* rmp->priority++;*/
     else if ((rmp->flags & USER_PROCESS) && rmp->priority == WINNING_Q) /* winner ran out of quantum */
         rmp->priority = HOLDING_Q;
     else { /* a process other than a winning process ran out of quantum. this means that
               the winning processe(s) are IO bound, so increase their tickets */
         if (rmp->flags & USER_PROCESS)
-        /*for (proc_nr_n = 0, rmp_temp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp_temp)
-            if (rmp_temp->priority == WINNING_Q && rmp_temp->flags == (IN_USE | USER_PROCESS))
+            /*for (proc_nr_n = 0, rmp_temp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp_temp)
+                if (rmp_temp->priority == WINNING_Q && rmp_temp->flags == (IN_USE | USER_PROCESS))
                 change_tickets(rmp_temp, 1);*/
-            printf("IO bound process\n");
+                printf("IO bound process\n");
+        else
+            printf("ERROR!\n");
 }
 
     if ((rv = schedule_process(rmp)) != OK) /* move process */
