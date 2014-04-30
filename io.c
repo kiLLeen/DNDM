@@ -24,7 +24,7 @@ extern void exit(void);
 int main(int argc, char *argv[]) {
     /* argument 1 is the number of iterations to run */
     /* argument 2 is the argument to nice() */
-    int i, j;
+    int i, j, k;
     pid_t process_id = getpid();
     FILE * infile, * outfile;
     char buff[1025];
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     }
 
     read_tsc_64(&s);
-    for (j = 1; j <= 20; ++j) {
+    for (k = 1; k <= 20; ++k) {
         for (i = 1; i<iters/20; ++i) {
             infile = fopen("proc.c", "rb");
             /* this only writes the current block, but is sufficient for testing purposes */
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
                 checksum = 0;
             }
         }
-        printf("Process %d has completed %d percent of it's work.\n", process_id, j * 5);
+        printf("Process %d has completed %d percent of it's work.\n", process_id, k * 5);
     }
     read_tsc_64(&e);
     diff = sub64(e, s);
