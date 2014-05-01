@@ -60,7 +60,7 @@ PRIVATE void debug() {
                 qsys++;
         }
 
-    printf("%d winning, %d IO, %d holding, %d system\n", q13, q14, q15, qsys);
+    /* printf("%d winning, %d IO, %d holding, %d system\n", q13, q14, q15, qsys); */
 }
 
 PRIVATE int count_winners() {
@@ -91,10 +91,8 @@ PRIVATE int do_lottery() {
 
     /* count the total number of tickets in all processes */
     for (proc_nr = 0, rmp = schedproc; proc_nr < NR_PROCS; ++proc_nr, ++rmp)
-        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* winnable? */ {
+        if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* winnable? */
             total_tickets += rmp->tickets;
-            /* printf("  process %d has %d tickets\n", proc_nr, rmp->tickets); */
-        }
     
     if (!total_tickets) /* there were no winnable processes */
         return OK;
@@ -113,7 +111,7 @@ PRIVATE int do_lottery() {
             break;
    }
 
-    printf("Process %d won with %d of %d tickets\n", proc_nr, rmp->tickets, total_tickets);
+    /* printf("Process %d won with %d of %d tickets\n", proc_nr, rmp->tickets, total_tickets); */
     /* schedule new winning process */
     rmp->priority = WINNING_Q;
     rmp->time_slice = USER_QUANTUM;
@@ -159,7 +157,8 @@ PUBLIC int do_noquantum(message *m_ptr) {
     if (!(rmp->flags & USER_PROCESS) && rmp->priority < WINNING_Q) { /* system process */
         if (rmp->priority < WINNING_Q - 1)
             rmp->priority++;
-    } else if ((rmp->flags & USER_PROCESS) && rmp->priority == WINNING_Q) { /* winner ran out of quantum */
+    } else if ((rmp->flags & USER_PROCESS) && (rmp->priority == WINNING_Q || rmp->priority == WINNING_Q+1)) {
+        /* winner or io task ran out of quantum */
         rmp->priority = HOLDING_Q;
         hold_lottery = 1;
     } else {
@@ -168,12 +167,13 @@ PUBLIC int do_noquantum(message *m_ptr) {
                 rmp_temp->iocount++;
                 rmp_temp->priority++;
             }
-        printf("IO bound process detected with %d winning processes\n", count_winners());
         hold_lottery = 1;
     }
 
     if ((rv = schedule_process(rmp)) != OK) /* move out of quantum process */
         return rv;
+
+    debug();
 
     if (hold_lottery && (rv = do_lottery() != OK)) /* schedule a new winner */
         return rv;
