@@ -20,7 +20,7 @@
 #define HOLDING_Q       (MIN_USER_Q)
                         /* this should be the queue in which processes are in
                            when they have not won the lottery */
-#define WINNING_Q       (HOLDING_Q - 1)
+#define WINNING_Q       (HOLDING_Q - 2)
                         /* this should be the queue in which processes are in
                            when they HAVE won the lottery */
 #define STARTING_TICKETS 20 /* the number of tickets each process starts with */
@@ -42,22 +42,25 @@ FORWARD _PROTOTYPE(void balance_queues, (struct timer *tp));
 
 
 PRIVATE void debug() {
-    int q14, q15, qs, proc_nr_n;
+    int q13, q14, q15, qsys, proc_nr_n;
     struct schedproc *rmp;
 
-    q14 = q15 = qs = 0;
+    q13 = q14 = q15 = qsys = 0;
     for (proc_nr_n = 0, rmp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp)
         if (rmp->flags == (IN_USE | USER_PROCESS)) {
-            if (rmp->priority == WINNING_Q) {
+            if (rmp->iocount);
+                /*printf("process %d has iocount %d\n", proc_nr_n, rmp->iocount);*/
+            if (rmp->priority == WINNING_Q)
+                q13++;
+            if (rmp->priority == WINNING_Q + 1)
                 q14++;
-            }
-            if (rmp->priority > WINNING_Q)
+            if (rmp->priority == HOLDING_Q)
                 q15++;
             if (rmp->priority < WINNING_Q)
-                qs++;
+                qsys++;
         }
 
-    printf("%d winning, %d holding, %d system\n", q14, q15, qs);
+    printf("%d winning, %d IO, %d holding, %d system\n", q13, q14, q15, qsys);
 }
 
 PRIVATE int count_winners() {
@@ -80,7 +83,7 @@ PRIVATE int count_winners() {
 *===========================================================================*/
 
 PRIVATE int do_lottery() {
-    register struct schedproc *rmp;
+    struct schedproc *rmp;
     int rv, proc_nr;
     int total_tickets = 0;
     u64_t tsc;
@@ -112,7 +115,6 @@ PRIVATE int do_lottery() {
 
     printf("Process %d won with %d of %d tickets\n", proc_nr, rmp->tickets, total_tickets);
     /* schedule new winning process */
-    rmp->tickets = rmp->starting_tickets;
     rmp->priority = WINNING_Q;
     rmp->time_slice = USER_QUANTUM;
 
@@ -126,25 +128,11 @@ PRIVATE int do_lottery() {
 *===========================================================================*/
 
 PRIVATE void change_tickets(struct schedproc *rmp, int qty) {
-    struct schedproc *rmp_temp = rmp;
-    rmp_temp->tickets += qty;
-    if (rmp_temp->tickets > MAX_TICKETS)
-        rmp_temp->tickets = MAX_TICKETS;
-    if (rmp_temp->tickets < MIN_TICKETS)
-        rmp_temp->tickets = MIN_TICKETS;
-}
-
-/*===========================================================================*
-*              change_starting_tickets                     *
-*===========================================================================*/
-
-PRIVATE void change_starting_tickets(struct schedproc *rmp, int qty) {
-    struct schedproc *rmp_temp = rmp;
-    rmp_temp->starting_tickets += qty;
-    if (rmp_temp->starting_tickets > MAX_TICKETS)
-        rmp_temp->starting_tickets = MAX_TICKETS;
-    if (rmp_temp->starting_tickets < MIN_TICKETS)
-        rmp_temp->starting_tickets = MIN_TICKETS;
+    rmp->tickets += qty;
+    if (rmp->tickets > MAX_TICKETS)
+        rmp->tickets = MAX_TICKETS;
+    if (rmp->tickets < MIN_TICKETS)
+        rmp->tickets = MIN_TICKETS;
 }
 
 /* CHANGE END */
@@ -154,8 +142,11 @@ PRIVATE void change_starting_tickets(struct schedproc *rmp, int qty) {
 *===========================================================================*/
 
 PUBLIC int do_noquantum(message *m_ptr) {
-    register struct schedproc *rmp, *rmp_temp;
-    int rv, proc_nr_n, hold_lottery = 0;
+    struct schedproc *rmp, *rmp_temp;
+    int rv, proc_nr_n;
+/* CHANGE START */
+    int hold_lottery = 0; /* boolean, should we hold a lottery? */
+/* CHANGE END */
 
     if (sched_isokendpt(m_ptr->m_source, &proc_nr_n) != OK) {
         printf("SCHED: WARNING: got an invalid endpoint in OOQ msg %u.\n",
@@ -172,15 +163,13 @@ PUBLIC int do_noquantum(message *m_ptr) {
         rmp->priority = HOLDING_Q;
         hold_lottery = 1;
     } else {
-            /* a user process other than a winning process ran out of quantum. this means that
-               the winning processe(s) may be IO bound, so increase their tickets */
         for (proc_nr_n = 0, rmp_temp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp_temp)
             if (rmp_temp->priority == WINNING_Q) {
-                change_tickets(rmp_temp, 100);
+                rmp_temp->iocount++;
+                rmp_temp->priority++;
             }
         printf("IO bound process detected with %d winning processes\n", count_winners());
         hold_lottery = 1;
-        change_tickets(rmp, -100);
     }
 
     if ((rv = schedule_process(rmp)) != OK) /* move out of quantum process */
@@ -252,9 +241,9 @@ PUBLIC int do_start_scheduling(message *m_ptr)
     rmp->parent       = m_ptr->SCHEDULING_PARENT;
     rmp->max_priority = (unsigned) m_ptr->SCHEDULING_MAXPRIO;
 /* CHANGE START */
-    rmp->starting_tickets = STARTING_TICKETS;
     rmp->tickets = STARTING_TICKETS;
     rmp->flags = 0; /* clear IN_USE and USER_PROCESS flags */
+    rmp->iocount = 0;
 /* CHANGE END */
 
     if (rmp->max_priority >= NR_SCHED_QUEUES)
@@ -348,7 +337,7 @@ PUBLIC int do_nice(message *m_ptr)
     tickets_to_add = (unsigned)m_ptr->SCHEDULING_MAXPRIO;
 
 /* CHANGE START */
-    change_starting_tickets(rmp, tickets_to_add);
+    change_tickets(rmp, tickets_to_add);
 /* CHANGE END */
 
     return rv;
@@ -396,7 +385,7 @@ PRIVATE void balance_queues(struct timer *tp) {
 
 /* CHANGE START */
     for (proc_nr = 0, rmp = schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++)
-        /* we only want to change kernel processes */
+        /* we only want to change system processes */
         if (rmp->flags == IN_USE && rmp->priority > rmp->max_priority) {
             rmp->priority--; /* increase priority */
             schedule_process(rmp);
