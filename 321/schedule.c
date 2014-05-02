@@ -207,17 +207,13 @@ int do_noquantum(message *m_ptr)
 
     if (rmp->priority < WINNING_Q - 1) /* system process */
         rmp->priority++;
-    else if (rmp->priority == WINNING_Q) {
-        printf("do_noquantum: WINNING process blocking %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC);
-        change_tickets(rmp, -1);
-        rmp->priority = HOLDING_Q;
-    } else if (rmp->priority == HOLDING_Q) {
-        printf("do_noquantum: holding process blocking %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC);
+    else if (rmp->priority >= WINNING_Q && rmp->priority <= HOLDING_Q) {
         if (m_ptr->SCHEDULING_ACNT_IPC_SYNC > 100) {
             change_tickets(rmp, 1);
         } else {
             change_tickets(rmp, -1);
         }
+        printf("do_noquantum: holding process blocking %d new tickets %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC, rmp->tickets);
     }
 
     if ((rv = schedule_process_local(rmp)) != OK) /* move out of quantum process */
