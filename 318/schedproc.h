@@ -26,7 +26,9 @@ EXTERN struct schedproc {
     unsigned priority;      /* the process' current priority */
     unsigned time_slice;        /* this process's time slice */
 /* CHANGE START */
-    unsigned tickets;         /* the number of tickets this process has */
+    unsigned tickets;         /* the number of tickets for this process, changed by nice */
+    unsigned blocking;         /* number of times that another process has end of
+                                 quantum while this process is in the winner queue */
 /* CHANGE END */
 } schedproc[NR_PROCS];
 
