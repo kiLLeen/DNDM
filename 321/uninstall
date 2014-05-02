@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+./copyold
+cd /usr/src/tools
+make install
