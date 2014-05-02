@@ -3,5 +3,5 @@
 echo Test 2 - Two CPU bound tasks, with 20 and 40 tickets
 echo One task should finish in about half the time
 #
-time ./cpu 7000000 0 &
-time ./cpu 7000000 20 &
+time ./cpu 1530000000 0 &
+time ./cpu 1530000000 20 &

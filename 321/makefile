@@ -10,21 +10,21 @@
 
 # GCC        = cc -Od -Weverything -std=c++11
 # GCC        = cc -Ox -Weverything -std=c++11
-GCC        = cc
+GCC        = g++ -g -O0 -Wall -Wextra -std=gnu++0x
 
 ASG        = proj2
 MKFILE     = makefile
 SOURCES1   = cpu.c
 SOURCES2   = io.c
 HEADERS    = 
-OBJECTS1   = ${SOURCES1:.c=.o}
-OBJECTS2   = ${SOURCES2:.c=.o}
+OBJECTS1   = ${SOURCES1:.c=.o} read_tsc_64.o read_tsc.o
+OBJECTS2   = ${SOURCES2:.c=.o} read_tsc_64.o read_tsc.o
 EXECBIN1   = cpu
 EXECBIN2   = io
 SRCFILES   = ${HEADERS} ${SOURCES1} ${SOURCES2} ${MKFILE}
-OTHERS     = copynew config.h main.c schedproc.h schedule.c
+OTHERS     = copynew config.h main.c schedproc.h schedule.c install makedeps
 
-all : ${EXECBIN1} ${EXECBIN2}
+all : makedeps ${EXECBIN1} ${EXECBIN2}
 
 ${EXECBIN1} : ${OBJECTS1}
 	${GCC} -o ${EXECBIN1} ${OBJECTS1}
