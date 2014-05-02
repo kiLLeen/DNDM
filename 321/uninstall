@@ -1,5 +1,6 @@
 #!/bin/sh
 #
 ./copyold
-cd /usr/src/tools
-make install
+cd /usr/src/releasetools
+make hdboot
+
