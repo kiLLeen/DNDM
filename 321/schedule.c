@@ -134,7 +134,6 @@ int do_lottery()
     //printf("Process %d won with %d of %d tickets\n", proc_nr, rmp->tickets, total_tickets);
     /* schedule new winning process */
     rmp->priority = WINNING_Q;
-    rmp->time_slice = USER_QUANTUM;
 
     if ((rv = schedule_process_local(rmp)) != OK)
         return rv;
@@ -164,7 +163,7 @@ inline void dynamic_adjust(struct schedproc *rmp, int blocking)
 
     if (blocking < 10) {
         change_tickets(rmp, -2);
-        newquantum = 200;
+        newquantum = 250;
     }
     if (blocking >= 10 && blocking < 1000) {
         change_tickets(rmp, 0);
