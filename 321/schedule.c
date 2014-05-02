@@ -17,6 +17,12 @@
 #include "kernel/proc.h" /* for queue constants */
 
 /* CHANGE START */
+#include <minix/type.h>
+#include <servers/pm/mproc.h>
+#include <kernel/proc.h>
+/* CHANGE END */
+
+/* CHANGE START */
 #define HOLDING_Q       (MIN_USER_Q) /* this should be the queue in which processes are in
                                         when they have not won the lottery */
 #define WINNING_Q       (HOLDING_Q - 1) /* this should be the queue in which processes are in
@@ -121,6 +127,29 @@ void debug()
     printf("%d winning, %d holding, %d system\n", q13, q15, qsys);
 }
 
+int get_pid(int proc_nr)
+{
+
+    struct mproc mproc_table[NR_PROCS];
+    struct proc proc_table[NR_PROCS];
+    struct kinfo kinfo;
+    int rv;
+
+    if ((rv = getsysinfo(PM_PROC_NR, SI_KINFO, &kinfo)) != 0) {
+        printf("ERROR calling getsysinfo SI_KINFO\n");
+        return -1;
+    }
+    if (getsysinfo(PM_PROC_NR, SI_PROC_TAB, mproc_table) < 0) {
+        printf("ERROR calling getsysinfo SI_PROC_TAB\n");
+        return -2;
+    }
+    if (getsysinfo(PM_PROC_NR, SI_KPROC_TAB, proc_table) < 0) {
+        printf("ERROR calling getsysinfo SI_KPROC_TAB\n");
+        return -3;
+    }
+    return mproc_table[proc_nr].mp_pid;
+}
+
 /*===========================================================================*
 *              do_lottery                     *
 * pick a winning process randomly from the holding queue                     *
@@ -159,7 +188,7 @@ int do_lottery()
             break;
     }
 
-    //printf("Process %d won with %d(%d) of %d tickets\n", proc_nr, rmp->tickets, rmp->blocking, total_tickets);
+    printf("Process %d won with %d of %d tickets\n", get_pid(proc_nr), rmp->tickets, total_tickets);
     /* schedule new winning process */
     rmp->priority = WINNING_Q;
     rmp->time_slice = USER_QUANTUM;
@@ -205,16 +234,13 @@ int do_noquantum(message *m_ptr)
 
 /* CHANGE START */
 
-    if (rmp->priority < WINNING_Q - 1) /* system process */
-        rmp->priority++;
-    else if (rmp->priority >= WINNING_Q && rmp->priority <= HOLDING_Q) {
-        if (m_ptr->SCHEDULING_ACNT_IPC_SYNC > 100) {
-            change_tickets(rmp, 1);
-        } else {
-            change_tickets(rmp, -1);
-        }
-        printf("do_noquantum: holding process blocking %d new tickets %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC, rmp->tickets);
+    if (m_ptr->SCHEDULING_ACNT_IPC_SYNC > 100) {
+        change_tickets(rmp, 1);
+    } else {
+        change_tickets(rmp, -1);
     }
+    rmp->priority = HOLDING_Q;
+    // printf("do_noquantum: holding process blocking %d new tickets %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC, rmp->tickets);
 
     if ((rv = schedule_process_local(rmp)) != OK) /* move out of quantum process */
         return rv;
@@ -295,7 +321,9 @@ int do_start_scheduling(message *m_ptr)
 	if (rmp->endpoint == rmp->parent) {
 		/* We have a special case here for init, which is the first
 		   process scheduled, and the parent of itself. */
-		rmp->priority   = USER_Q;
+/* CHANGE START */
+        rmp->priority = HOLDING_Q;
+/* CHANGE END */
 		rmp->time_slice = DEFAULT_USER_TIME_SLICE;
 
 		/*
@@ -316,8 +344,10 @@ int do_start_scheduling(message *m_ptr)
 		/* We have a special case here for system processes, for which
 		 * quanum and priority are set explicitly rather than inherited 
 		 * from the parent */
-		rmp->priority   = rmp->max_priority;
-		rmp->time_slice = (unsigned) m_ptr->SCHEDULING_QUANTUM;
+/* CHANGE START */
+        rmp->priority = HOLDING_Q;
+/* CHANGE END */
+        rmp->time_slice = (unsigned)m_ptr->SCHEDULING_QUANTUM;
         break;
 		
 	case SCHEDULING_INHERIT:
@@ -449,7 +479,7 @@ void init_scheduling(void)
 {
 	balance_timeout = BALANCE_TIMEOUT * sys_hz();
 	init_timer(&sched_timer);
-	set_timer(&sched_timer, balance_timeout, balance_queues, 0);
+	// set_timer(&sched_timer, balance_timeout, balance_queues, 0);
 }
 
 /*===========================================================================*
