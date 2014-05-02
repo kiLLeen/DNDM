@@ -56,6 +56,6 @@ int main(int argc, char *argv[]) {
         printf("CPU Process %d has completed %d percent of it's work.\n", process_id, j * 10);
     }
     read_tsc_64(&e);
-    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -0.4 * sum, (double)(e - s) / 1000000);
+    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -0.4 * sum, (double)(e - s) / 2500000000);
     return 0;
 }

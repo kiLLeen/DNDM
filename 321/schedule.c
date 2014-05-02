@@ -227,9 +227,7 @@ int do_noquantum(message *m_ptr)
 
     /* CHANGE START */
 
-    printf("blocking: %d\n", m_ptr->SCHEDULING_ACNT_IPC_SYNC);
-
-    // printf("do_noquantum, priority %d\n", rmp->priority);
+    printf("do_noquantum, priority %d, blocking %d\n", rmp->priority, m_ptr->SCHEDULING_ACNT_IPC_SYNC);
     /* system process - change priority and return */
     if (!(rmp->flags & USER_PROCESS) && rmp->priority < WINNING_Q) {
         if (rmp->priority < WINNING_Q - 1) {
@@ -239,6 +237,8 @@ int do_noquantum(message *m_ptr)
         return OK;
     }
     /* user process */
+    assert(rmp->priority >= WINNING_Q);
+    assert(rmp->flags & USER_PROCESS);
     if (rmp->priority == WINNING_Q) { /* winner ran out of quantum */
         if (rmp->blocking) {
             change_tickets(rmp, 1);

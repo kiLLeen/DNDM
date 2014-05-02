@@ -19,4 +19,5 @@ when the process completes, type "reboot"
 then select the modified kernel (option 2)
 
 To build test files:
+type "./makedeps"
 type "make"

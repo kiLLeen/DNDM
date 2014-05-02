@@ -1,3 +1,5 @@
+/* MODIFIED 5-1-14 */
+
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
@@ -68,9 +70,13 @@
 /* Scheduling priorities. Values must start at zero (highest
  * priority) and increment.
  */
-#define NR_SCHED_QUEUES   16	/* MUST equal minimum priority + 1 */
+/* CHANGE START */
+#define NR_SCHED_QUEUES   19	/* MUST equal minimum priority + 1 */
+/* CHANGE END */
 #define TASK_Q		   0	/* highest, used for kernel tasks */
+/* CHANGE START */
 #define MAX_USER_Q  	   0    /* highest priority for user processes */   
+/* CHANGE END */
 #define USER_Q  	  ((MIN_USER_Q - MAX_USER_Q) / 2 + MAX_USER_Q) /* default
 						(should correspond to nice 0) */
 #define MIN_USER_Q	  (NR_SCHED_QUEUES - 1)	/* minimum priority for user

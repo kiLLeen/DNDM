@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
         printf("IO Process %d has completed %d percent of it's work.\n", process_id, k * 10);
     }
     read_tsc_64(&e);
-    printf("IO process %d (nice %d) completed at %f time units\n", process_id, nice_val, (double)(e - s) / 1000000);
+    printf("IO process %d (nice %d) completed at %f time units\n", process_id, nice_val, (double)(e - s) / 2500000000);
     remove("test.txt");
     return 0;
 }

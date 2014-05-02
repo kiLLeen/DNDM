@@ -7,8 +7,3 @@ cp read_tsc_64.o $dir
 cp read_tsc.o $dir
 make clean
 cd $dir
-
-
-
-
-

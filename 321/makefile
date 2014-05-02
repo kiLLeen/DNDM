@@ -8,9 +8,8 @@
 # Dave Lazell - dlazell
 # Desmond Vehar - dvehar
 
-# GCC        = cc -Od -Weverything -std=c++11
-# GCC        = cc -Ox -Weverything -std=c++11
-GCC        = g++ -g -O0 -Wall -Wextra -std=gnu++0x
+# GCC        = g++ -g -O0 -Wall -Wextra -std=gnu++0x
+GCC        = g++ -Ofast -Wall -Wextra -std=gnu++0x
 
 ASG        = proj2
 MKFILE     = makefile
