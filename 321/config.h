@@ -71,14 +71,11 @@
  * priority) and increment.
  */
 /* CHANGE START */
-#define NR_SCHED_QUEUES   19	/* MUST equal minimum priority + 1 */
+#define NR_SCHED_QUEUES     18      /* MUST equal minimum priority + 1 */
+#define TASK_Q		        0       /* highest, used for kernel tasks */
+#define MAX_USER_Q  	    16      /* highest priority for user processes */   
+#define USER_Q  	        7
 /* CHANGE END */
-#define TASK_Q		   0	/* highest, used for kernel tasks */
-/* CHANGE START */
-#define MAX_USER_Q  	   0    /* highest priority for user processes */   
-/* CHANGE END */
-#define USER_Q  	  ((MIN_USER_Q - MAX_USER_Q) / 2 + MAX_USER_Q) /* default
-						(should correspond to nice 0) */
 #define MIN_USER_Q	  (NR_SCHED_QUEUES - 1)	/* minimum priority for user
 						   processes */
 /* default scheduling quanta */
