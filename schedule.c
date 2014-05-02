@@ -20,7 +20,7 @@
 #define HOLDING_Q       (MIN_USER_Q)
                         /* this should be the queue in which processes are in
                            when they have not won the lottery */
-#define WINNING_Q       (HOLDING_Q - 2)
+#define WINNING_Q       (HOLDING_Q - 1)
                         /* this should be the queue in which processes are in
                            when they HAVE won the lottery */
 #define STARTING_TICKETS 20 /* the number of tickets each process starts with */
@@ -40,27 +40,34 @@ FORWARD _PROTOTYPE(void balance_queues, (struct timer *tp));
 
 /* CHANGE START */
 
-
 PRIVATE void debug() {
-    int q13, q14, q15, qsys, proc_nr_n;
+    int q13, q14, q15, qsys, proc_nr_n, q13io, q14io, q15io;
     struct schedproc *rmp;
 
-    q13 = q14 = q15 = qsys = 0;
+    q13 = q14 = q15 = qsys = q13io = q14io = q15io = 0;
     for (proc_nr_n = 0, rmp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp)
         if (rmp->flags == (IN_USE | USER_PROCESS)) {
-            if (rmp->iocount);
-                /*printf("process %d has iocount %d\n", proc_nr_n, rmp->iocount);*/
-            if (rmp->priority == WINNING_Q)
+            printf("process %d priority %d tickets %d blocked %d times\n", proc_nr_n, rmp->priority, rmp->tickets, rmp->blocking);
+            if (rmp->priority == WINNING_Q) {
                 q13++;
-            if (rmp->priority == WINNING_Q + 1)
+                if (rmp->blocking)
+                    q13io++;
+            }
+            if (rmp->priority == WINNING_Q + 1) {
                 q14++;
-            if (rmp->priority == HOLDING_Q)
+                if (rmp->blocking)
+                    q14io++;
+            }
+            if (rmp->priority == HOLDING_Q) {
                 q15++;
+                if (rmp->blocking)
+                    q15io++;
+            }
             if (rmp->priority < WINNING_Q)
                 qsys++;
         }
 
-    /* printf("%d winning, %d IO, %d holding, %d system\n", q13, q14, q15, qsys); */
+    printf("%d(%d) winning, %d(%d) IO, %d(%d) holding, %d system\n", q13, q13io, q14, q14io, q15, q15io, qsys);
 }
 
 PRIVATE int count_winners() {
@@ -90,6 +97,8 @@ PRIVATE int do_lottery() {
     int winner;
 
     /* count the total number of tickets in all processes */
+    /* we really should have a global to keep track of this total */
+    /* rather than computing it every time */
     for (proc_nr = 0, rmp = schedproc; proc_nr < NR_PROCS; ++proc_nr, ++rmp)
         if (rmp->priority == HOLDING_Q && rmp->flags == (IN_USE | USER_PROCESS)) /* winnable? */
             total_tickets += rmp->tickets;
@@ -111,10 +120,13 @@ PRIVATE int do_lottery() {
             break;
    }
 
-    /* printf("Process %d won with %d of %d tickets\n", proc_nr, rmp->tickets, total_tickets); */
+    printf("Process %d won with %d(%d) of %d tickets\n", proc_nr, rmp->tickets, rmp->blocking, total_tickets);
     /* schedule new winning process */
     rmp->priority = WINNING_Q;
     rmp->time_slice = USER_QUANTUM;
+    /*if (rmp->blocking)
+        rmp->time_slice = USER_QUANTUM / (rmp->blocking + 1); */
+    rmp->blocking = 0;
 
     if ((rv = schedule_process(rmp)) != OK)
         return rv;
@@ -142,9 +154,6 @@ PRIVATE void change_tickets(struct schedproc *rmp, int qty) {
 PUBLIC int do_noquantum(message *m_ptr) {
     struct schedproc *rmp, *rmp_temp;
     int rv, proc_nr_n;
-/* CHANGE START */
-    int hold_lottery = 0; /* boolean, should we hold a lottery? */
-/* CHANGE END */
 
     if (sched_isokendpt(m_ptr->m_source, &proc_nr_n) != OK) {
         printf("SCHED: WARNING: got an invalid endpoint in OOQ msg %u.\n",
@@ -153,21 +162,33 @@ PUBLIC int do_noquantum(message *m_ptr) {
     }
 
     rmp = &schedproc[proc_nr_n];
+
 /* CHANGE START */
-    if (!(rmp->flags & USER_PROCESS) && rmp->priority < WINNING_Q) { /* system process */
-        if (rmp->priority < WINNING_Q - 1)
+    printf("do_noquantum, priority %d\n", rmp->priority);
+    /* system process - change priority and return */
+    if (!(rmp->flags & USER_PROCESS) && rmp->priority < WINNING_Q) {
+        if (rmp->priority < WINNING_Q - 1) {
             rmp->priority++;
-    } else if ((rmp->flags & USER_PROCESS) && (rmp->priority == WINNING_Q || rmp->priority == WINNING_Q+1)) {
-        /* winner or io task ran out of quantum */
+            schedule_process(rmp);
+        }
+        return OK;
+    }
+    /* user process */
+    if (rmp->priority == WINNING_Q) { /* winner ran out of quantum */
+        if (rmp->blocking) {
+            change_tickets(rmp, 1);
+            printf("IO process out of quantum, blocked %d times\n", rmp->blocking);
+        }
+        else {
+            change_tickets(rmp, -1);
+            printf("CPU process out of quantum\n");
+        }
         rmp->priority = HOLDING_Q;
-        hold_lottery = 1;
-    } else {
+    } else { /* a non winning task finished, meaning all winning tasks are io bound */
         for (proc_nr_n = 0, rmp_temp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp_temp)
-            if (rmp_temp->priority == WINNING_Q) {
-                rmp_temp->iocount++;
-                rmp_temp->priority++;
-            }
-        hold_lottery = 1;
+            if (rmp_temp->priority == WINNING_Q)
+                rmp_temp->blocking++;
+        printf("IO bound process detected - increasing blocking to %d\n", rmp_temp->blocking);
     }
 
     if ((rv = schedule_process(rmp)) != OK) /* move out of quantum process */
@@ -175,12 +196,11 @@ PUBLIC int do_noquantum(message *m_ptr) {
 
     debug();
 
-    if (hold_lottery && (rv = do_lottery() != OK)) /* schedule a new winner */
+    if (rv = do_lottery() != OK) /* schedule a new winner */
         return rv;
-/* CHANGE END */
-   
-    debug();
 
+    /* CHANGE END */
+   
     return OK;
 }
 
@@ -205,9 +225,6 @@ PUBLIC int do_stop_scheduling(message *m_ptr)
     rmp = &schedproc[proc_nr_n];
 /* CHANGE START */
     rmp->flags = 0; /* clear IN_USE and USER_PROCESS flags */
-
-    if (!count_winners() && (rv = do_lottery() != OK))
-        return rv;
 /* CHANGE START */
 
     return OK;
@@ -243,7 +260,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 /* CHANGE START */
     rmp->tickets = STARTING_TICKETS;
     rmp->flags = 0; /* clear IN_USE and USER_PROCESS flags */
-    rmp->iocount = 0;
+    rmp->blocking = 0;
 /* CHANGE END */
 
     if (rmp->max_priority >= NR_SCHED_QUEUES)
@@ -304,11 +321,6 @@ PUBLIC int do_start_scheduling(message *m_ptr)
      */
 
     m_ptr->SCHEDULING_SCHEDULER = SCHED_PROC_NR;
-
-/* CHANGE START */
-    if (!count_winners() && (rv = do_lottery() != OK))
-        return rv;
-/* CHANGE START */
 
     return OK;
 }
