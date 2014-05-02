@@ -16,7 +16,7 @@ To install it type "pkgin install gcc44-4.4.6nb4"
 To install modified kernel:
 type "./install"
 when the process completes, type "reboot"
-then select the modified kernel (last option)
+then select the modified kernel (option 2)
 
 To build test files:
 type "make"

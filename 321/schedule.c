@@ -179,7 +179,7 @@ int do_lottery() {
             break;
     }
 
-    printf("Process %d won with %d(%d) of %d tickets\n", proc_nr, rmp->tickets, rmp->blocking, total_tickets);
+    //printf("Process %d won with %d(%d) of %d tickets\n", proc_nr, rmp->tickets, rmp->blocking, total_tickets);
     /* schedule new winning process */
     rmp->priority = WINNING_Q;
     rmp->time_slice = USER_QUANTUM;
@@ -226,7 +226,10 @@ int do_noquantum(message *m_ptr)
 	rmp = &schedproc[proc_nr_n];
 
     /* CHANGE START */
-    printf("do_noquantum, priority %d\n", rmp->priority);
+
+    printf("blocking: %d\n", m_ptr->SCHEDULING_ACNT_IPC_SYNC);
+
+    // printf("do_noquantum, priority %d\n", rmp->priority);
     /* system process - change priority and return */
     if (!(rmp->flags & USER_PROCESS) && rmp->priority < WINNING_Q) {
         if (rmp->priority < WINNING_Q - 1) {
@@ -239,23 +242,23 @@ int do_noquantum(message *m_ptr)
     if (rmp->priority == WINNING_Q) { /* winner ran out of quantum */
         if (rmp->blocking) {
             change_tickets(rmp, 1);
-            printf("IO process out of quantum, blocked %d times\n", rmp->blocking);
+            // printf("IO process out of quantum, blocked %d times\n", rmp->blocking);
         } else {
             change_tickets(rmp, -1);
-            printf("CPU process out of quantum\n");
+            // printf("CPU process out of quantum\n");
         }
         rmp->priority = HOLDING_Q;
     } else { /* a non winning task finished, meaning all winning tasks are io bound */
         for (proc_nr_n = 0, rmp_temp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp_temp)
             if (rmp_temp->priority == WINNING_Q)
                 rmp_temp->blocking++;
-        printf("IO bound process detected - increasing blocking to %d\n", rmp_temp->blocking);
+        // printf("IO bound process detected - increasing blocking to %d\n", rmp_temp->blocking);
     }
 
     if ((rv = schedule_process_local(rmp)) != OK) /* move out of quantum process */
         return rv;
 
-    debug();
+    //debug();
 
     if ((rv = do_lottery()) != OK) /* schedule a new winner */
         return rv;
@@ -319,6 +322,12 @@ int do_start_scheduling(message *m_ptr)
 	rmp->endpoint     = m_ptr->SCHEDULING_ENDPOINT;
 	rmp->parent       = m_ptr->SCHEDULING_PARENT;
 	rmp->max_priority = (unsigned) m_ptr->SCHEDULING_MAXPRIO;
+/* CHANGE START */
+    rmp->tickets = STARTING_TICKETS;
+    rmp->flags = 0; /* clear IN_USE and USER_PROCESS flags */
+    rmp->blocking = 0;
+/* CHANGE END */
+
 	if (rmp->max_priority >= NR_SCHED_QUEUES) {
 		return EINVAL;
 	}
@@ -362,8 +371,11 @@ int do_start_scheduling(message *m_ptr)
 				&parent_nr_n)) != OK)
 			return rv;
 
-		rmp->priority = schedproc[parent_nr_n].priority;
-		rmp->time_slice = schedproc[parent_nr_n].time_slice;
+/* CHANGE START */
+        rmp->priority = HOLDING_Q;
+        rmp->flags |= USER_PROCESS;
+/* CHANGE END */
+        rmp->time_slice = schedproc[parent_nr_n].time_slice;
 		break;
 		
 	default: 
@@ -378,9 +390,11 @@ int do_start_scheduling(message *m_ptr)
 			rmp->endpoint, rv);
 		return rv;
 	}
-	rmp->flags = IN_USE;
+/* CHANGE START */
+    rmp->flags |= IN_USE; /* process is valid */
+/* CHANGE END */
 
-	/* Schedule the process, giving it some quantum */
+    /* Schedule the process, giving it some quantum */
 	pick_cpu(rmp);
 	while ((rv = schedule_process(rmp, SCHEDULE_CHANGE_ALL)) == EBADCPU) {
 		/* don't try this CPU ever again */
