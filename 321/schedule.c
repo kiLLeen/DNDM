@@ -17,12 +17,6 @@
 #include "kernel/proc.h" /* for queue constants */
 
 /* CHANGE START */
-#include <minix/type.h>
-#include <servers/pm/mproc.h>
-#include <kernel/proc.h>
-/* CHANGE END */
-
-/* CHANGE START */
 #define HOLDING_Q       (MIN_USER_Q) /* this should be the queue in which processes are in
                                         when they have not won the lottery */
 #define WINNING_Q       (HOLDING_Q - 1) /* this should be the queue in which processes are in
@@ -32,15 +26,9 @@
 #define MAX_TICKETS     100 /* the max number of tickets a process can have */
 
 #define MIN_TICKETS     1   /* the min number of tickets a process can have */
-/* CHANGE END */
-
-static timer_t sched_timer;
-static unsigned balance_timeout;
-
-#define BALANCE_TIMEOUT	5 /* how often to balance queues in seconds */
 
 static int schedule_process(struct schedproc * rmp, unsigned flags);
-static void balance_queues(struct timer *tp);
+/* CHANGE END */
 
 #define SCHEDULE_CHANGE_PRIO	0x1
 #define SCHEDULE_CHANGE_QUANTUM	0x2
@@ -105,51 +93,6 @@ static void pick_cpu(struct schedproc * proc)
 
 /* CHANGE START */
 
-void debug()
-{
-    int q13, q14, q15, qsys, proc_nr_n;
-    struct schedproc *rmp;
-
-    q13 = q14 = q15 = qsys  = 0;
-    for (proc_nr_n = 0, rmp = schedproc; proc_nr_n < NR_PROCS; ++proc_nr_n, ++rmp)
-        if (rmp->flags == (IN_USE)) {
-            printf("process %d priority %d tickets %d\n", proc_nr_n, rmp->priority, rmp->tickets);
-            if (rmp->priority == WINNING_Q) {
-                q13++;
-            }
-            if (rmp->priority == HOLDING_Q) {
-                q15++;
-            }
-            if (rmp->priority < WINNING_Q)
-                qsys++;
-        }
-
-    printf("%d winning, %d holding, %d system\n", q13, q15, qsys);
-}
-
-int get_pid(int proc_nr)
-{
-
-    struct mproc mproc_table[NR_PROCS];
-    struct proc proc_table[NR_PROCS];
-    struct kinfo kinfo;
-    int rv;
-
-    if ((rv = getsysinfo(PM_PROC_NR, SI_KINFO, &kinfo)) != 0) {
-        printf("ERROR calling getsysinfo SI_KINFO\n");
-        return -1;
-    }
-    if (getsysinfo(PM_PROC_NR, SI_PROC_TAB, mproc_table) < 0) {
-        printf("ERROR calling getsysinfo SI_PROC_TAB\n");
-        return -2;
-    }
-    if (getsysinfo(PM_PROC_NR, SI_KPROC_TAB, proc_table) < 0) {
-        printf("ERROR calling getsysinfo SI_KPROC_TAB\n");
-        return -3;
-    }
-    return mproc_table[proc_nr].mp_pid;
-}
-
 /*===========================================================================*
 *              do_lottery                     *
 * pick a winning process randomly from the holding queue                     *
@@ -188,7 +131,7 @@ int do_lottery()
             break;
     }
 
-    printf("Process %d won with %d of %d tickets\n", get_pid(proc_nr), rmp->tickets, total_tickets);
+    //printf("Process %d won with %d of %d tickets\n", proc_nr, rmp->tickets, total_tickets);
     /* schedule new winning process */
     rmp->priority = WINNING_Q;
     rmp->time_slice = USER_QUANTUM;
@@ -209,6 +152,40 @@ inline void change_tickets(struct schedproc *rmp, int qty)
         rmp->tickets = MAX_TICKETS;
     if (rmp->tickets < MIN_TICKETS)
         rmp->tickets = MIN_TICKETS;
+}
+
+/*===========================================================================*
+*              dynamic_adjust                     *
+*===========================================================================*/
+
+inline void dynamic_adjust(struct schedproc *rmp, int blocking)
+{
+    int newquantum;
+
+    if (blocking < 10) {
+        change_tickets(rmp, -2);
+        newquantum = 200;
+    }
+    if (blocking >= 10 && blocking < 1000) {
+        change_tickets(rmp, 0);
+        newquantum = 160;
+    }
+    if (blocking >= 1000 && blocking < 2000) {
+        change_tickets(rmp, 1);
+        newquantum = 80;
+    }
+    if (blocking >= 2000 && blocking < 3000) {
+        change_tickets(rmp, 1);
+        newquantum = 40;
+    }
+    if (blocking >= 3000) {
+        change_tickets(rmp, 2);
+        newquantum = 20;
+    }
+
+    if (newquantum < 20)
+        newquantum = 20;
+    rmp->time_slice = newquantum;
 }
 
 /* CHANGE END */
@@ -234,13 +211,10 @@ int do_noquantum(message *m_ptr)
 
 /* CHANGE START */
 
-    if (m_ptr->SCHEDULING_ACNT_IPC_SYNC > 100) {
-        change_tickets(rmp, 1);
-    } else {
-        change_tickets(rmp, -1);
-    }
+    dynamic_adjust(rmp, m_ptr->SCHEDULING_ACNT_IPC_SYNC);
+    
     rmp->priority = HOLDING_Q;
-    // printf("do_noquantum: holding process blocking %d new tickets %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC, rmp->tickets);
+    //printf("do_noquantum: process blocking %d new tickets %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC, rmp->tickets);
 
     if ((rv = schedule_process_local(rmp)) != OK) /* move out of quantum process */
         return rv;
@@ -477,33 +451,7 @@ static int schedule_process(struct schedproc * rmp, unsigned flags)
 
 void init_scheduling(void)
 {
-	balance_timeout = BALANCE_TIMEOUT * sys_hz();
-	init_timer(&sched_timer);
-	// set_timer(&sched_timer, balance_timeout, balance_queues, 0);
-}
-
-/*===========================================================================*
- *				balance_queues				     *
- *===========================================================================*/
-
-/* This function in called every 100 ticks to rebalance the queues. The current
- * scheduler bumps processes down one priority when ever they run out of
- * quantum. This function will find all proccesses that have been bumped down,
- * and pulls them back up. This default policy will soon be changed.
- */
-static void balance_queues(struct timer *tp)
-{
-	struct schedproc *rmp;
-	int proc_nr;
-
 /* CHANGE START */
-    for (proc_nr = 0, rmp = schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++)
-        /* we only want to change system processes */
-        if (rmp->flags == IN_USE && rmp->priority > rmp->max_priority && rmp->priority < WINNING_Q) {
-            rmp->priority--; /* increase priority */
-            schedule_process_local(rmp);
-        }
-/* CHANGE END */
-
-	set_timer(&sched_timer, balance_timeout, balance_queues, 0);
+    // We are not using balance_queues, so this code was not needed
 }
+/* CHANGE END */
