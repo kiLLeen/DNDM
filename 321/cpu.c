@@ -6,11 +6,12 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#include <minix/minlib.h>
+
 extern void read_tsc_64(u64_t* t);
 extern int atoi(char* str);
 extern u64_t sub64(u64_t s, u64_t t);
 extern int nice(int n);
-extern void exit(void);
 
 /* The main program. Calculates pi as a cpu bound test. */
 /* Occationally the program emits the process id and how much work has been done */
@@ -27,9 +28,7 @@ int main(int argc, char *argv[]) {
     int denom, numer;
     pid_t process_id = getpid();
     int retval, nice_val, iters;
-    u64_t s,e,diff;
-    double elapsed;
-    unsigned long max;
+    u64_t s,e,elapsed;
 
     if (argc < 3) {
         printf("usage: cpu iterations tickets\n");
@@ -57,9 +56,6 @@ int main(int argc, char *argv[]) {
         printf("CPU Process %d has completed %d percent of it's work.\n", process_id, j * 10);
     }
     read_tsc_64(&e);
-    diff = sub64(e, s);
-    max = -1;
-    elapsed = (double)diff.hi + (double)(diff.lo/100000) / (double)(max/100000);
-    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -0.2 * sum, elapsed);
+    printf("CPU process %d (nice %d) calculated pi as %f at %f time units\n", process_id, nice_val, -0.4 * sum, (double)(e - s) / 2500000000);
     return 0;
 }

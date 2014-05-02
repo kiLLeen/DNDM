@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+./copyold
+cd /usr/src/releasetools
+make hdboot
+

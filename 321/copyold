@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+cp ./original/main.c /usr/src/kernel/
+cp ./original/config.h /usr/src/include/minix/
+cp ./original/schedproc.h /usr/src/servers/sched/
+cp ./original/schedule.c /usr/src/servers/sched/
+cp ./original/utility.c /usr/src/servers/pm
+

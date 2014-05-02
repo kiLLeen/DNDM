@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+dir=$PWD
+cd /usr/src/lib/libminlib
+make
+cp read_tsc_64.o $dir
+cp read_tsc.o $dir
+make clean
+cd $dir
