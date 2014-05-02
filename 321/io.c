@@ -54,12 +54,25 @@ int main(int argc, char *argv[]) {
             infile = fopen("schedule.c", "rb");
             /* this only writes the current block, but is sufficient for testing purposes */
             outfile = fopen("test.txt", "wb");
-            err = fseek(infile, block * 1024, SEEK_SET);
+            fseek(infile, block * 1024, SEEK_SET);
             fseek(outfile, block * 1024, SEEK_SET);
             count = fread(buff, 1, 1024, infile);
+            if (feof(infile)) {
+                block = 0;
+                fclose(infile);
+                fclose(outfile);
+                continue;
+            }
             for (j = 0; j < count; ++j)
                 checksum += buff[j];
             count2 = fwrite(buff, 1, count, outfile);
+            if (count2 != count) {
+                printf("write error\n");
+                block = 0;
+                fclose(infile);
+                fclose(outfile);
+                continue;
+            }
             fclose(infile);
             fclose(outfile);
             block++;
@@ -72,6 +85,5 @@ int main(int argc, char *argv[]) {
     }
     read_tsc_64(&e);
     printf("IO process %d (nice %d) completed at %f time units\n", process_id, nice_val, (double)(e - s) / 2500000000);
-    remove("test.txt");
     return 0;
 }
