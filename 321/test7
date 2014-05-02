@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+echo Test 6 - Mixed CPU and IO bound tasks
+echo The processes should run faster then each run separately
+#
+
+
+
+
+echo Running both concurrently:
+time ./io 2050 0 &
+time ./io 2050 0 &
+time ./cpu 765000000 0 &
+time ./cpu 765000000 0 &
+
+

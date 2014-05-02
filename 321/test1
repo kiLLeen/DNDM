@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+echo Test1 - Two cpu bound tasks with 20 tickets each
+echo They should both have similar runtimes
+#
+time ./cpu 1530000000 0 &
+time ./cpu 1530000000 0 &
