@@ -1,2 +1,5 @@
 *.o
 test.txt
+*.aux
+*.log
+*.synctex.gz
