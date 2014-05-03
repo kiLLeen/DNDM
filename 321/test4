@@ -1,7 +1,9 @@
 #!/bin/sh
 #
-echo Test 4 - Two CPU bound tasks, with 1 and 100 tickets
-echo The process with 1 ticket should still run 
+echo Test 4 - One IO task with one ticket and three CPU tasks
+echo each with 100 tickets.
 #
-time ./cpu 1530000000 -19 &
+time ./io 5000 -19 &
+time ./cpu 1530000000 80 &
+time ./cpu 1530000000 80 &
 time ./cpu 1530000000 80 &

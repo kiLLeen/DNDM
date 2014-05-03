@@ -1,18 +1,14 @@
 #!/bin/sh
 #
-echo Test 6 - Mixed CPU and IO bound tasks
-echo The processes should run faster then each run separately
-#
+echo Test 7 - Mixed CPU and IO bound tasks
+echo This test runs processes separately to
+echo get the total time of all run separately
 
-
-
-
-echo Running both concurrently:
-time ./io 1300 0 &
-time ./cpu 457000000 0 &
-time ./io 1300 0 &
-time ./cpu 457000000 0 &
-time ./io 1300 0 &
-time ./cpu 457000000 0 &
-
+echo Running all tasks sucessively:
+time ./io 1300 0 
+time ./cpu 457000000 0 
+time ./io 1300 0 
+time ./cpu 457000000 0 
+time ./io 1300 0 
+time ./cpu 457000000 0 
 

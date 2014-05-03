@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     read_tsc_64(&s);
     for (k = 1; k <= 10; ++k) {
         for (i = 1; i<iters/10; ++i) {
-            infile = fopen("schedule.c", "rb");
+            infile = fopen("main.c", "rb");
             /* this only writes the current block, but is sufficient for testing purposes */
             outfile = fopen("test.txt", "wb");
             fseek(infile, block * 1024, SEEK_SET);
