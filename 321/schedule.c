@@ -92,13 +92,15 @@ static void pick_cpu(struct schedproc * proc)
 }
 
 /* CHANGE START */
-
 /*===========================================================================*
-*              do_lottery                     *
-* pick a winning process randomly from the holding queue                     *
-* change the process to the winning queue and give it some quantum           *
+*   do_lottery
+*
+*   This function holds a lottery of all the processes in the holding queue
+*   based on the number of tickets they have
+*
+*   @return OK - a process was scheduled via lottery (if possible)
+*           -1 - failed to schedule the winning process
 *===========================================================================*/
-
 int do_lottery()
 {
     struct schedproc *rmp;
@@ -141,9 +143,16 @@ int do_lottery()
 }
 
 /*===========================================================================*
-*              change_tickets                     *
+*   change_tickets
+*
+*   This function changes the number of tickets of a process by a quantity
+*
+*   @param rmp - points to the process entry to modify, the process entry is
+*       changed to reflect the new ticket count
+*   @param qty - the amount to modify the ticket count by
+*   @constraints - the ticket value is not changed outside of the range of
+*       MIN_TICKETS to MAX_TICKETS
 *===========================================================================*/
-
 inline void change_tickets(struct schedproc *rmp, int qty)
 {
     rmp->tickets += qty;
@@ -154,9 +163,16 @@ inline void change_tickets(struct schedproc *rmp, int qty)
 }
 
 /*===========================================================================*
-*              dynamic_adjust                     *
+*   dynamic_adjust
+*
+*   This function adjusts the number of tickets and the quantum of a process
+*   depending on how much the process blocked on the prior quantum
+*
+*   @param rmp - points to the process entry to modify, the process entry is
+*       changed to reflect the new ticket count and quantum
+*   @param blocking - the count of how many times the process blocked
+*       on the prior quantum
 *===========================================================================*/
-
 inline void dynamic_adjust(struct schedproc *rmp, int blocking)
 {
     int newquantum;
@@ -187,12 +203,19 @@ inline void dynamic_adjust(struct schedproc *rmp, int blocking)
     rmp->time_slice = newquantum;
 }
 
-/* CHANGE END */
-
 /*===========================================================================*
- *				do_noquantum				     *
- *===========================================================================*/
-
+*   do_noquantum
+*
+*   This function is called by the kernel when a process is out of quantum.
+*   The function reschedules the out of quantum process, adjusts the
+*   quantum and number of tickets, and schedules a new winning process
+*
+*   @param m_ptr - the message from the kernel, containing the endpoint for
+*       the process
+*   @return OK - old process was rescheduled, and a new one scheduled
+*           -1 - failed to schedule a process
+*===========================================================================*/
+/* CHANGE END */
 int do_noquantum(message *m_ptr)
 {
 /* CHANGE START */
@@ -209,26 +232,34 @@ int do_noquantum(message *m_ptr)
 	rmp = &schedproc[proc_nr_n];
 
 /* CHANGE START */
-
     dynamic_adjust(rmp, m_ptr->SCHEDULING_ACNT_IPC_SYNC);
     
     rmp->priority = HOLDING_Q;
-    //printf("do_noquantum: process blocking %d new tickets %d\n", (int)m_ptr->SCHEDULING_ACNT_IPC_SYNC, rmp->tickets);
 
     if ((rv = schedule_process_local(rmp)) != OK) /* move out of quantum process */
         return rv;
 
     if ((rv = do_lottery()) != OK) /* schedule a new winner */
         return rv;
-
 /* CHANGE END */
 
     return OK;
 }
 
+/* CHANGE START */
 /*===========================================================================*
- *				do_stop_scheduling			     *
- *===========================================================================*/
+*   do_stop_scheduling
+*
+*   This function is called by the kernel when a process has stopped running.
+*   It sets a flag in the schedproc struct to disable the process with the
+*   given endpoint.
+*
+*   @param m_ptr - the message from the kernel, containing the endpoint for
+*       the process
+*   @return OK - a process was scheduled via lottery (if possible)
+*           -1 - failed to schedule a process
+*===========================================================================*/
+/* CHANGE END */
 int do_stop_scheduling(message *m_ptr)
 {
 	register struct schedproc *rmp;
@@ -253,9 +284,19 @@ int do_stop_scheduling(message *m_ptr)
 	return OK;
 }
 
+/* CHANGE START */
 /*===========================================================================*
- *				do_start_scheduling			     *
- *===========================================================================*/
+*   do_start_scheduling
+*
+*   This function is called by the kernel when a process has been started.
+*   It sets up a process for scheduling, and does the initial scheduling for it
+*
+*   @param m_ptr - the message from the kernel, containing the endpoint for
+*       the process
+*   @return OK - a process was scheduled
+*           -1 - failed to schedule a process
+*===========================================================================*/
+/* CHANGE END */
 int do_start_scheduling(message *m_ptr)
 {
 	register struct schedproc *rmp;
@@ -377,13 +418,22 @@ int do_start_scheduling(message *m_ptr)
 	return OK;
 }
 
+/* CHANGE START */
 /*===========================================================================*
- *				do_nice					     *
- *===========================================================================*/
+*   do_nice
+*
+*   This function is called by the kernel when a process has been started.
+*   It sets up a process for scheduling, and does the initial scheduling for it
+*
+*   @param m_ptr - the message from the kernel, containing the endpoint for
+*       the process
+*   @return OK - there were no errors
+*           -1 - there was an error
+*===========================================================================*/
+/* CHANGE END */
 int do_nice(message *m_ptr)
 {
 	struct schedproc *rmp;
-	int rv;
 	int proc_nr_n;
 /* CHANGE START */
     unsigned tickets_to_add;
@@ -406,7 +456,7 @@ int do_nice(message *m_ptr)
     change_tickets(rmp, tickets_to_add);
 /* CHANGE END */
 
-	return rv;
+	return OK;
 }
 
 /*===========================================================================*
