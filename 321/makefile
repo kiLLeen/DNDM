@@ -21,7 +21,7 @@ OBJECTS2   = ${SOURCES2:.c=.o} read_tsc_64.o read_tsc.o
 EXECBIN1   = cpu
 EXECBIN2   = io
 SRCFILES   = ${HEADERS} ${SOURCES1} ${SOURCES2} ${MKFILE}
-OTHERS     = copynew config.h main.c schedproc.h install makedeps
+OTHERS     = copynew config.h main.c schedproc.h install makedeps utility.c
 TESTS      = test1 test2 test3 test4 test5 test6 test7
 
 all : makedeps ${EXECBIN1} ${EXECBIN2}
