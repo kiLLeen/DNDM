@@ -1,5 +1,14 @@
 #!/bin/sh
 #
+echo Which version do you want to install?
+echo [1] regular lottery scheduler
+echo [2] dynamic lottery scheduler
+read var
+if [ $var -eq 1 ]; then
+cp ./static/schedule.c /usr/src/servers/sched 
+else
+cp ./dynamic/schedule.c /usr/src/servers/sched
+fi
 ./copynew
 cd /usr/src/releasetools
 make hdboot

@@ -3,10 +3,12 @@
 echo Test 6 - Mixed CPU and IO bound tasks
 echo The processes should run faster then each run separately
 #
-echo Running single cpu task:
-time ./cpu 1530000000 0
-echo Running single io task:
-time ./io 4100 0
 echo Running both concurrently:
-time ./cpu 1530000000 0 &
-time ./io 4100 0 &
+time ./io 1300 0 &
+time ./cpu 457000000 0 &
+time ./io 1300 0 &
+time ./cpu 457000000 0 &
+time ./io 1300 0 &
+time ./cpu 457000000 0 &
+
+

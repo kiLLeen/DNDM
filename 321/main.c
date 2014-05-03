@@ -312,9 +312,14 @@ void kmain(kinfo_t *local_cbi)
   NOT_REACHABLE;
 }
 
+/* CHANGE START */
 /*===========================================================================*
- *				announce				     *
- *===========================================================================*/
+*   announce
+*
+*   This function is prints the Minix kernel version information to the
+*   console during boot.
+*===========================================================================*/
+/* CHANGE END */
 static void announce(void)
 {
   /* Display the MINIX startup banner. */
@@ -329,7 +334,7 @@ static void announce(void)
   printf("************************************\n");
   printf("*  MODIFIED FOR LOTTERY SCHEDULER  *\n");
   printf("************************************\n");
-  /* CHANGE END */
+/* CHANGE END */
 }
 
 /*===========================================================================*

@@ -99,9 +99,21 @@ pid_t lpid;
   return(NULL);
 }
 
+/* CHANGE START */
 /*===========================================================================*
- *				nice_to_priority			     *
- *===========================================================================*/
+*   nice_to_priority
+*
+*   This function changes copies the nice value of a process to the new
+*   'priority' of a process. This 'priority' is used in the user mode
+*   scheduler to represent the number of tickets a process should be adjusted
+*   by. This function is eventually called by the kernel call nice() and also
+*   by the nice shell command.
+*
+*   @param nice - the nice level of the process
+*   @param new_q - the amount to modify the ticket count by
+*   @return - OK, the function had no errors
+*===========================================================================*/
+/* CHANGE END */
 int nice_to_priority(int nice, unsigned* new_q)
 {
 /* CHANGE START */

@@ -21,7 +21,8 @@ OBJECTS2   = ${SOURCES2:.c=.o} read_tsc_64.o read_tsc.o
 EXECBIN1   = cpu
 EXECBIN2   = io
 SRCFILES   = ${HEADERS} ${SOURCES1} ${SOURCES2} ${MKFILE}
-OTHERS     = copynew config.h main.c schedproc.h schedule.c install makedeps
+OTHERS     = copynew config.h main.c schedproc.h install makedeps
+TESTS      = test1 test2 test3 test4 test5 test6 test7
 
 all : makedeps ${EXECBIN1} ${EXECBIN2}
 
@@ -45,6 +46,6 @@ spotless : clean
 	- rm ${ASG}.tar ${ASG}.tgz
 
 zip:
-	tar -c -f ${ASG}.tar README.txt design.pdf ${SRCFILES} ${OTHERS}
+	tar -c -f ${ASG}.tar README.txt design.pdf ${SRCFILES} ${OTHERS} \dynamic \static ${TESTS}
 	gzip -c ${ASG}.tar > ${ASG}.tgz
 	rm ${ASG}.tar
