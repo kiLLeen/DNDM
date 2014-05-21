@@ -194,7 +194,7 @@ void slug_free ( void *addr, char *WHERE ) {
   if (curr == NULL) { /* not in the list */
     fprintf(stderr, "%s: address %p is not the first byte of any memory that \
 was allocated to you\n", WHERE, addr);
-    return;
+    exit(1);
   } else if (tmp == NULL) { /* the head is getting removed */
     head = head -> link;
   } else { /* some node in the 'tail' is getting removed */
