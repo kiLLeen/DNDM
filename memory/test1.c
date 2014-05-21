@@ -28,5 +28,5 @@ int main() {
   for (i = 0; i < MAX_ALLOCATION; ++i)
     free( mem + i + MAX_ALLOCATION + offset );
 
-  return (EXIT_SUCCESS);
+  return 0;
 }

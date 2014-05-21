@@ -13,7 +13,7 @@
 
 #define MAX_ALLOCATION 2 /* How many allocations */
 
-int main () {
+int main() {
     void *mem[MAX_ALLOCATION] = { 0 };
 
     mem[0] = malloc(0);
