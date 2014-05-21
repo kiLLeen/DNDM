@@ -8,7 +8,7 @@
 
 #define MAX_ALLOCATION 50 /* Max allocation in bytes. */
 
-int main() {
+int main(int argc, char *argv[]) {
     void *mem[MAX_ALLOCATION] = { 0 };
     void *temp[MAX_ALLOCATION] = { 0 };
     int i;

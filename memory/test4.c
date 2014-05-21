@@ -9,7 +9,7 @@
 #define MAX_ALLOCATION 200 /* How many allocations */
 #define SIZE_OF_ALLOC 10 /* Size of the allocation */
 
-int main() {
+int main(int argc, char *argv[]) {
     void *mem[MAX_ALLOCATION] = { 0 };
     int i;
 

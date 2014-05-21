@@ -9,9 +9,10 @@
 #define MAX_ALLOCATION 50 /* How many allocations */
 #define SIZE_OF_ALLOC 10 /* Size of the allocation */
 
-int main() {
+int main(int argc, char *argv[]) {
     void *mem[MAX_ALLOCATION] = { 0 };
     int i;
+    void *memptr;
 
     for (i = 0; i < MAX_ALLOCATION; ++i) 
         mem[i] = malloc(SIZE_OF_ALLOC);

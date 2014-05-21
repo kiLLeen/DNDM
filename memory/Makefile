@@ -6,7 +6,7 @@
 CC	= cc
 ASG	= proj3
 
-TESTSRC = ${wildcard test*.c}
+TESTSRC = $(wildcard test*.c)
 TESTOBJ = ${TESTSRC:.c=.o}
 
 HEADERS = slug.h
