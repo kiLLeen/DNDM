@@ -1,5 +1,9 @@
 /* CREATED 5-20-14 */
 
+/* Test to show errors when trying to free memory that has
+* already been freed
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

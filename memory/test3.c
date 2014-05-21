@@ -1,5 +1,9 @@
 /* CREATED 5-20-14 */
 
+/* Test to show errors when trying to free memory with
+* a location in the middle of an allocation
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
