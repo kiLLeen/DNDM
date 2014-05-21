@@ -1,6 +1,6 @@
 CREATED 5-20-14
 
-Assignment: Project 3 - Memory Allocator
+Assignment: Project 3 - Memory Allocation
 Class: CMPS111 - Spring 2014
 Professor: N. Whitehead
 
@@ -19,5 +19,5 @@ type "gmake"
 
 This will create the slug.o file for linking with the test files.
 It will also link all test files with this object file to create
-  the test file executables, test1 through test4, explained in
+  the test file executables, test1 through test6, explained in
   the design document
