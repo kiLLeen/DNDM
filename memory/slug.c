@@ -1,5 +1,24 @@
 /* CREATED by Desmond Vehar (dvehar) on 5.20.14 */
 
+/*
+Assignment: Project 3 - Memory Allocation
+Class: CMPS111 - Spring 2014
+Professor: N. Whitehead
+
+Melanie Dickinson - mldickin
+Neil Killeen - nkilleen
+Dave Lazell - dlazell
+Desmond Vehar - dvehar
+
+
+This program creates a wrapper around malloc() and free()
+By including slug.h and linking the the object file created
+this file, user programs upon exit get a report on allocated
+memory. This is useful to detect memory leaks. Also, errors
+such as freeing already freed memory, or invalid memory, are
+reported.
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -81,14 +100,14 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
       total_size_allocated += mem_size;
       delta = mem_size - total_mean;
       total_mean += delta / total_alloc_count;
-      total_m2 += delta * (mem_size - total_mean);
+      total_m2 += delta * delta;
 
       /* update active stats */
       ++active_alloc_count;
       active_total_size += mem_size;
       delta = mem_size - active_mean;
       active_mean += delta / active_alloc_count;
-      active_m2 += delta * (mem_size - active_mean);
+      active_m2 += delta * delta;
 
       /* set the node's values appropriately */
       tmp_node -> size = mem_size;
@@ -104,7 +123,8 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
       /* insert the node into the linked list */
       if (head == NULL) {
         tmp_node -> link = NULL;
-        if (total_alloc_count == 1 && atexit(slug_memstats) != 0) { /* set up the callback for when program exits */
+        if (total_alloc_count == 1 && atexit(slug_memstats) != 0) {
+                   /* set up the callback for when program exits */
           fprintf(stderr, "Unable to setup the memory statistics callback.\n");
           exit(1);
         }
@@ -205,7 +225,7 @@ void slug_memstats(void) {
            curr->address, curr->time_sec, curr->time_usec,(unsigned long)curr->size, curr->file_name,
            curr->line_num);
     tmp = curr->link;
-    free(curr->address);
+    free(curr->address); /* free leaked memory from user program */
     curr->address = NULL;
     free(curr->file_name);
     curr->file_name = NULL;
