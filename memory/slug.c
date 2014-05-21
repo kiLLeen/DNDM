@@ -63,11 +63,11 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
   long double delta = 0;
   
   if (mem_size > ALLOC_LIMIT) {
-    fprintf(stderr, "excessive allocation size request of %zu bytes\n", mem_size);
+    fprintf(stderr, "Excessive allocation size request of %zu bytes\n", mem_size);
     exit(1);
   } else {
     if (mem_size == 0)
-      fprintf(stderr, "unusual operation: %s: %d: allocation of 0 bytes\n", file_name, linenr);      
+      fprintf(stderr, "Unusual operation: %s: %d: allocation of 0 bytes\n", file_name, linenr);      
 
     *address = malloc(mem_size);
     if (*address == NULL && mem_size != 0) {
@@ -192,8 +192,8 @@ void slug_free ( void *addr, char *WHERE ) {
   }
  
   if (curr == NULL) { /* not in the list */
-    fprintf(stderr, "%s: address %p is not the first byte of any memory that %s\n", 
-                   "was allocated to you", WHERE, addr);
+    fprintf(stderr, "%s: address %p is not the first byte of any memory that \
+was allocated to you\n", WHERE, addr);
     exit(1);
   } else if (tmp == NULL) { /* the head is getting removed */
     head = head -> link;
@@ -232,28 +232,28 @@ void slug_memstats ( void ) {
   }
    
   if (active_alloc_count != 0) {
-    printf("number of active allocations: %" PRIuMAX "\n", active_alloc_count);
-    printf("total bytes currently allocated: %" PRIuMAX "\n", active_total_size);
-    printf("mean of memory sizes currently allocated: %lg\n", active_mean);
+    printf("Number of active allocations: %" PRIuMAX "\n", active_alloc_count);
+    printf("Total bytes currently allocated: %" PRIuMAX "\n", active_total_size);
+    printf("Mean of memory sizes currently allocated: %lg\n", active_mean);
     if (active_alloc_count > 1) {
-      printf("standard deviation of memory sizes currently allocated: %lg\n",
+      printf("Standard deviation of memory sizes currently allocated: %lg\n",
              sqrt(active_m2 / (active_alloc_count - 1)));
     } else {
-      printf("standard deviation of memory sizes currently allocated: 0\n");
+      printf("Standard deviation of memory sizes currently allocated: 0\n");
     }
   } else {
     printf("No memory leaks found.\n");
   }
   
   printf("\n");
-  printf("total allocations made: %" PRIuMAX "\n", total_alloc_count);
-  printf("total bytes allocated: %" PRIuMAX "\n", total_size_allocated);
-  printf("mean of memory sizes allocated: %lg\n", total_mean);  
+  printf("Total allocations made: %" PRIuMAX "\n", total_alloc_count);
+  printf("Total bytes allocated: %" PRIuMAX "\n", total_size_allocated);
+  printf("Mean of memory sizes allocated: %lg\n", total_mean);  
   if (total_alloc_count > 1) {
-    printf("standard deviation of memory sizes allocated: %lg\n",
+    printf("Standard deviation of memory sizes allocated: %lg\n",
            sqrt(total_m2 / (total_alloc_count - 1)));
   } else {
-    printf("standard deviation of memory sizes allocated: 0\n");
+    printf("Standard deviation of memory sizes allocated: 0\n");
   }
 
 #ifdef SLUG_DEBUG
