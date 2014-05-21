@@ -1,22 +1,34 @@
-COMPILEC  = cc
+# CREATED 5-13-2014
 
-CSOURCE	= test.c slug.c
-EXECBIN	= tester
-OBJECTS	= test.o slug.o
+# Test files follow naming convention test#.c
+# A similarly named executable is generated for each such file
+
+CC	= cc
+ASG	= proj3
+
+TESTSRC = ${wildcard test*.c}
+TESTOBJ = ${TESTSRC:.c=.o}
+
+HEADERS = slug.h
+CSOURCE = slug.c
+OBJECTS = slug.o
+EXECBIN = ${TESTSRC:.c=}
+SRCFILES= ${HEADERS} ${CSOURCE} ${TESTSRC}
 
 all : ${EXECBIN}
 
-${EXECBIN} : ${OBJECTS}
-	${COMPILEC} -o $@ ${OBJECTS}
-	
+${EXECBIN} : ${OBJECTS} ${TESTOBJ}
+	${CC} -o $@ ${OBJECTS} $@.o -lm
+
 %.o : %.c
-	${COMPILEC} -c -Wall -Wextra $< 
+	${CC} -c -Wall -Wextra $< 
 
 clean :
 	- rm ${OBJECTS}
+	- rm ${TESTOBJ}
 
 spotless : clean
 	- rm ${EXECBIN}
 
-#pack:
-#	tar -cvzf shell.tgz Makefile shell.c lex.c README.txt design.pdf design_desmond.pdf
+pack:
+	tar -cvzf ${ASG}.tgz Makefile README.txt design.pdf ${SRCFILES}
