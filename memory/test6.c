@@ -1,8 +1,8 @@
 /* CREATED 5-20-14 */
 
 /* Test program to show that a program attempting to
-   allocate 0 bytes will error, and attempting to
-   allocate more than 128 MiB will error and exit
+ * allocate 0 bytes will error, and attempting to
+ * allocate more than 128 MiB will error and exit
 */
 
 #include <stdio.h>
@@ -13,7 +13,7 @@
 
 #define MAX_ALLOCATION 2 /* How many allocations */
 
-int main() {
+int main () {
     void *mem[MAX_ALLOCATION] = { 0 };
 
     mem[0] = malloc(0);
