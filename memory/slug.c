@@ -12,7 +12,7 @@
 #define BAD 1
 #define ALLOC_LIMIT 1048576
 
-/*#define SLUG_DEUG*/
+/*#define SLUG_DEBUG*/
 
 void slug_memstats ( void );
 
@@ -30,12 +30,12 @@ typedef struct node {
 
 node* head = NULL;
 
-/* for calculating the active meterics */
+/* for calculating the active metrics */
 uintmax_t active_total_size = 0;
 uintmax_t active_alloc_count = 0;
 long double active_mean = 0;
 long double active_m2 = 0;
-/* for calculating the total meterics */
+/* for calculating the total metrics */
 uintmax_t total_size_allocated = 0;
 uintmax_t total_alloc_count = 0;
 long double total_mean = 0;
@@ -47,7 +47,7 @@ long double total_m2 = 0;
  *             file - filename of where the slug_malloc call was made
  *             address - a pointer to the location where the address 
  *                       returned from malloc should be stored
- * retuns: OK
+ * returns: OK
  * intended action: - to malloc and also keep track of info about the allocation.
  *                  - to crash if malloc fails to allocate memory
  *                  - to register a callback to slug_memstats when the user's program 
@@ -120,9 +120,9 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
  * parameters: str - something in "filename:linenr" format
  *             filename - a pointer to a location which will be modified to
  *                        hold a pointer to the extracted filename (strdup'd)
- * retuns: the extacted line number
+ * returns: the extracted line number
  * intended action: to parse the str
- * assumptions: str is in the apportiate format (there is atleast one character 
+ * assumptions: str is in the appropriate format (there is at least one character 
  *              before the colon and one number after)
  */
 int split (char* str, char** filename) {
@@ -196,7 +196,7 @@ void slug_free ( void *addr, char *WHERE ) {
     tmp -> link = curr -> link; /* node before curr points to the node after curr */
   }
   
-  /* update the active stats*/
+  /* update the active stats */
   active_total_size -= curr -> size;
   --active_alloc_count;
   delta = curr -> size - active_mean;
