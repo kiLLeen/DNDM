@@ -14,39 +14,39 @@
 
 /* function: slug_malloc
  * parameters: size - size of the allocation to make in bytes
- *             WHERE - a sting in this format: "filename:linenumber"
- * retuns: what a malloc call would return (address to start of the allocated memory)
+ *             WHERE - a string in this format: "filename:linenumber"
+ * returns: what a malloc call would return (address to start of the allocated memory)
  * intended action: - to malloc and also keep track of info about the allocation.
  *                  - to crash if malloc fails to allocate memory
  *                  - to register a callback to slug_memstats when the user's program 
  *                    finishes.
  *                  - warn if an alloc of size 0 is requested
  *                  - crash if an alloc over 1048576 is requested
- * assumptions: WHERE is formated correctly
+ * assumptions: WHERE is formatted correctly
  */
 void *slug_malloc ( size_t size, char *WHERE );
 
 /* function: slug_malloc
  * parameters: addr - the starting address of a memory allocation to free
- *             WHERE - a sting in this format: "filename:linenumber"
- * retuns: what a malloc call would return (address to start of the allocated memory)
+ *             WHERE - a string in this format: "filename:linenumber"
+ * returns: what a malloc call would return (address to start of the allocated memory)
  * intended action: - to free and also keep track of info about the allocation.
  *                  - to crash if the user tries to free memory that has already been free'd
- *                     or the user gives an address that doesn't point to the start of an 
+ *                     or the user gives an address that doesn't point to the start of a 
  *                     memory allocation made by them
- * assumptions: WHERE is formated correctly
+ * assumptions: WHERE is formatted correctly
  */
 void slug_free ( void *addr, char *WHERE );
 
 /* function: slug_malloc
  * parameters: void
- * retuns: void
- * intended action: - to print out inforamtion about every memory leak
+ * returns: void
+ * intended action: - to print out information about every memory leak
  *                  - to print number of allocations and the total size,
- *                    mean, and statardivation of the allocations. Both 
+ *                    mean, and standard deviation of the allocations. Both 
  *                    for active allocations (non-free'd) and all allocations.
- * assumptions: the online algrothim we use for calculating the variance has 
- *              percision issues.
+ * assumptions: the online algorithm we use for calculating the variance has 
+ *              precision issues.
  */
 void slug_memstats ( void );
 
