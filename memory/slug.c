@@ -18,12 +18,12 @@ void slug_memstats ( void );
 
 typedef struct node {
   /* data */
-  long int time_sec; /* the current timestamp */
-  long int time_usec; /* the current timestamp */
-  size_t size; /* the length of the allocated memory */
-  char* file_name; /* the file in which the malloc was made */
-  long int line_num; /* the line number in the file in which the malloc was made */
-  void* address; /* the address of the allocated memory */
+  long int time_sec;    /* the current timestamp */
+  long int time_usec;   /* the current timestamp */
+  size_t size;          /* the length of the allocated memory */
+  char* file_name;      /* the file in which the malloc was made */
+  long int line_num;    /* the line number in the file in which the malloc was made */
+  void* address;        /* the address of the allocated memory */
   /* link */
   struct node* link;
 } node;
