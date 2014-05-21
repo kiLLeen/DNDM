@@ -10,15 +10,15 @@ TESTSRC = ${wildcard test*.c}
 TESTOBJ = ${TESTSRC:.c=.o}
 
 HEADERS = slug.h
-CSOURCE	= slug.c
+CSOURCE = slug.c
 OBJECTS = slug.o
-EXECBIN	= ${TESTSRC:.c=}
+EXECBIN = ${TESTSRC:.c=}
 SRCFILES= ${HEADERS} ${CSOURCE} ${TESTSRC}
 
 all : ${EXECBIN}
 
 ${EXECBIN} : ${OBJECTS} ${TESTOBJ}
-	${CC} -o $@ ${OBJECTS} $@.o
+	${CC} -o $@ ${OBJECTS} $@.o -lm
 
 %.o : %.c
 	${CC} -c -Wall -Wextra $< 
