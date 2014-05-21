@@ -222,16 +222,24 @@ was allocated to you\n", WHERE, addr);
 
 void slug_memstats ( void ) {
   node* curr = head; /* for iterating over the linked list */
+  node* tmp = NULL;
 
 #ifdef SLUG_DEBUG  
   printf("in slug memstats\n");
 #endif
   
   /* dump each allocations info and calculate the total size allocated */
-  for ( ; curr != NULL ; curr = curr -> link) {
+  while(curr != NULL) {
     printf("address: %p\ntime: %ld.%06ld\nsize: %lu\nfile: %s\nline number: %ld\n-   -   -   -   -   -  -\n",
            curr->address, curr->time_sec, curr->time_usec,(unsigned long)curr->size, curr->file_name,
            curr->line_num);
+    tmp = curr->link;
+    free(curr->address);
+    curr->address = NULL;
+    free(curr->file_name);
+    curr->file_name = NULL;
+    free(curr);
+    curr = tmp;
   }
    
   if (active_alloc_count != 0) {
