@@ -61,7 +61,7 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
   long double delta = 0;
   
   if (mem_size > ALLOC_LIMIT) {
-    fprintf(stderr, "Excessive allocation size request of %zu bytes\n", mem_size);
+    fprintf(stderr, "Excessive allocation size request of %d bytes\n", mem_size);
     exit(1);
   } else {
     if (mem_size == 0)

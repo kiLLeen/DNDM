@@ -1,7 +1,8 @@
 /* CREATED 5-20-14 */
 
-/* Test to show memory leaks: memory allocated 
-* by never deallocated
+/* Test program to show that a correct program remain correct
+   and should allocate/deallocate memory as normal, 
+   without errors.
 */
 
 #include <stdio.h>
@@ -17,11 +18,11 @@ int main() {
     void *mem[MAX_ALLOCATION] = { 0 };
     int i;
 
-    for (i = 0; i < MAX_ALLOCATION; ++i) {
+    for (i = 0; i < MAX_ALLOCATION; ++i)
         mem[i] = malloc(SIZE_OF_ALLOC);
-        printf("Allocating: %p\n", mem[i]);
-    }
 
-    printf("Exiting...\n");
+    for (i = 0; i < MAX_ALLOCATION; ++i)
+        free(mem[i]);
+
     return 0;
 }

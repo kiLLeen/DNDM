@@ -16,3 +16,8 @@ The package "gcc44-4.4.3" must be installed
 
 To build:
 type "gmake"
+
+This will create the slug.o file for linking with the test files.
+It will also link all test files with this object file to create
+  the test file executables, test1 through test4, explained in
+  the design document
