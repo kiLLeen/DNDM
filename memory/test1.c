@@ -15,6 +15,7 @@
 int main (void) {
   void *mem[MAX_ALLOCATION] = { 0 };
   size_t size = 1000;
+  int offset = size;
   int i;
 
   for (i = 0; i < MAX_ALLOCATION; ++i) 
@@ -25,7 +26,7 @@ int main (void) {
 
   /* Trying to free invalid addresses */
   for (i = 0; i < MAX_ALLOCATION; ++i)
-    free(mem+i+MAX_ALLOCATION);
+    free( mem + i + MAX_ALLOCATION + offset );
 
   return (EXIT_SUCCESS);
 }
