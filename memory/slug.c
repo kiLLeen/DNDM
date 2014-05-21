@@ -10,7 +10,7 @@
 
 #define OK 0
 #define BAD 1
-#define ALLOC_LIMIT 1048576
+#define ALLOC_LIMIT 128000000
 
 /* #define SLUG_DEBUG */
 
@@ -237,7 +237,7 @@ void slug_memstats ( void ) {
   if (active_alloc_count != 0) {
     printf("Number of active allocations: %" PRIuMAX "\n", active_alloc_count);
     printf("Total bytes currently allocated: %" PRIuMAX "\n", active_total_size);
-    printf("Mean of memory sizes currently allocated: %lg\n", active_mean);
+    printf("Mean of memory sizes currently allocated: %Lg\n", active_mean);
     if (active_alloc_count > 1) {
       printf("Standard deviation of memory sizes currently allocated: %lg\n",
              sqrt(active_m2 / (active_alloc_count - 1)));
@@ -251,7 +251,7 @@ void slug_memstats ( void ) {
   printf("\n");
   printf("Total allocations made: %" PRIuMAX "\n", total_alloc_count);
   printf("Total bytes allocated: %" PRIuMAX "\n", total_size_allocated);
-  printf("Mean of memory sizes allocated: %lg\n", total_mean);  
+  printf("Mean of memory sizes allocated: %Lg\n", total_mean);  
   if (total_alloc_count > 1) {
     printf("Standard deviation of memory sizes allocated: %lg\n",
            sqrt(total_m2 / (total_alloc_count - 1)));
