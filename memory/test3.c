@@ -12,7 +12,6 @@
 int main(int argc, char *argv[]) {
     void *mem[MAX_ALLOCATION] = { 0 };
     int i;
-    void *memptr;
 
     for (i = 0; i < MAX_ALLOCATION; ++i) 
         mem[i] = malloc(SIZE_OF_ALLOC);

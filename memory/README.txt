@@ -12,8 +12,7 @@ Desmond Vehar - dvehar
 
 
 For this project we are using Minix version 3.1.8
+The package "gcc44-4.4.3" must be installed
 
 To build:
 type "gmake"
-
-If this doesnt work you will need to install package "gcc44-4.4.3"
