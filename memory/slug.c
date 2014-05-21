@@ -12,18 +12,18 @@
 #define BAD 1
 #define ALLOC_LIMIT 1048576
 
-/*#define SLUG_DEBUG*/
+/* #define SLUG_DEBUG */
 
 void slug_memstats ( void );
 
 typedef struct node {
   /* data */
-  long int time_sec;
-  long int time_usec;
-  size_t size;
-  char* file_name;
-  long int line_num;
-  void* address; /* the mem that was malloc'd */
+  long int time_sec; /* the current timestamp */
+  long int time_usec; /* the current timestamp */
+  size_t size; /* the length of the allocated memory */
+  char* file_name; /* the file in which the malloc was made */
+  long int line_num; /* the line number in the file in which the malloc was made */
+  void* address; /* the address of the allocated memory */
   /* link */
   struct node* link;
 } node;
@@ -42,9 +42,9 @@ long double total_mean = 0;
 long double total_m2 = 0;
 
 /* function name: insert_node
- * parameters: linenr - linenumber from the file the slug_malloc occured on
+ * parameters: linenr - linenumber from the file the slug_malloc occurred on
  *             mem_size - how much memory to malloc in bytes
- *             file - filename of where the slug_malloc call was made
+ *             file_name - filename of where the slug_malloc call was made
  *             address - a pointer to the location where the address 
  *                       returned from malloc should be stored
  * returns: OK
@@ -67,7 +67,7 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
     exit(1);
   } else {
     if (mem_size == 0)
-      fprintf(stderr, "unusual opperation: %s: %d: allocation of 0 bytes\n", file_name, linenr);      
+      fprintf(stderr, "unusual operation: %s: %d: allocation of 0 bytes\n", file_name, linenr);      
 
     *address = malloc(mem_size);
     if (*address == NULL && mem_size != 0) {
@@ -77,28 +77,33 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
     } else {
       tmp_node = malloc(sizeof(node));
       assert(tmp_node != NULL);
+
       /* update total stats */
       ++total_alloc_count;
       total_size_allocated += mem_size;
       delta = mem_size - total_mean;
       total_mean += delta / total_alloc_count;
       total_m2 += delta * (mem_size - total_mean);
+
       /* update active stats */
       ++active_alloc_count;
       active_total_size += mem_size;
       delta = mem_size - active_mean;
       active_mean += delta / active_alloc_count;
       active_m2 += delta * (mem_size - active_mean);
-      /* set the node's values approperiately */
+
+      /* set the node's values appropriately */
       tmp_node -> size = mem_size;
       tmp_node -> file_name = file_name;
       tmp_node -> line_num = linenr;
       tmp_node -> address = *address;
+
       /* get time*/
       gettimeofday(&tmp_time, NULL);
       tmp_node -> time_sec = tmp_time.tv_sec;
       tmp_node -> time_usec = tmp_time.tv_usec;
-      /*insert the node into the linked list */
+
+      /* insert the node into the linked list */
       if (head == NULL) {
         tmp_node -> link = NULL;
         if (total_alloc_count == 1) {
@@ -138,7 +143,7 @@ int split (char* str, char** filename) {
   for (i = strlen(str) - 1; i >= 0 && str[i] != ':'; --i) {  
   }
   
-  /* don't need to check if we only call the function using the str*/
+  /* don't need to check if we only call the function using the str */
   ret_val = atoi(str + i + 1);
   new_str = calloc(i+1, sizeof(char));
   memcpy(new_str, str, i*sizeof(char));
@@ -213,7 +218,7 @@ void slug_free ( void *addr, char *WHERE ) {
 }
 
 void slug_memstats ( void ) {
-  node* curr = head; /* for itterating over the linked list */
+  node* curr = head; /* for iterating over the linked list */
 
 #ifdef SLUG_DEBUG  
   printf("in slug memstats\n");
@@ -229,12 +234,12 @@ void slug_memstats ( void ) {
   if (active_alloc_count != 0) {
     printf("number of active allocations: %" PRIuMAX "\n", active_alloc_count);
     printf("total bytes currently allocated: %" PRIuMAX "\n", active_total_size);
-    printf("mean of memory currently allocated: %lg\n", active_mean);
+    printf("mean of memory sizes currently allocated: %lg\n", active_mean);
     if (active_alloc_count > 1) {
-      printf("standard deviation of memory currently allocated: %lg\n",
+      printf("standard deviation of memory sizes currently allocated: %lg\n",
              sqrt(active_m2 / (active_alloc_count - 1)));
     } else {
-      printf("standard deviation of memory currently allocated: 0\n");
+      printf("standard deviation of memory sizes currently allocated: 0\n");
     }
   } else {
     printf("No memory leaks found.\n");
@@ -243,12 +248,12 @@ void slug_memstats ( void ) {
   printf("\n");
   printf("total allocations made: %" PRIuMAX "\n", total_alloc_count);
   printf("total bytes allocated: %" PRIuMAX "\n", total_size_allocated);
-  printf("mean of memory allocated: %lg\n", total_mean);  
+  printf("mean of memory sizes allocated: %lg\n", total_mean);  
   if (total_alloc_count > 1) {
-    printf("standard deviation of memory allocated: %lg\n",
+    printf("standard deviation of memory sizes allocated: %lg\n",
            sqrt(total_m2 / (total_alloc_count - 1)));
   } else {
-    printf("standard deviation of memory allocated: 0\n");
+    printf("standard deviation of memory sizes allocated: 0\n");
   }
 
 #ifdef SLUG_DEBUG
