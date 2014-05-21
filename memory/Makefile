@@ -6,8 +6,8 @@
 CC	= gcc
 ASG	= proj3
 
-TESTSRC = $(wildcard test*.c)
-TESTOBJ = $(TESTSRC:.c=.o)
+TESTSRC = ${wildcard test*.c}
+TESTOBJ = ${TESTSRC:.c=.o}
 
 HEADERS = slug.h
 CSOURCE = slug.c
