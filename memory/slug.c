@@ -10,7 +10,7 @@
 
 #define OK 0
 #define BAD 1
-#define ALLOC_LIMIT 1048576
+#define ALLOC_LIMIT 134217728
 
 /* #define SLUG_DEBUG */
 
