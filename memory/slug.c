@@ -100,14 +100,14 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
       total_size_allocated += mem_size;
       delta = mem_size - total_mean;
       total_mean += delta / total_alloc_count;
-      total_m2 += delta * delta;
+      total_m2 += delta * (mem_size - total_mean);
 
       /* update active stats */
       ++active_alloc_count;
       active_total_size += mem_size;
       delta = mem_size - active_mean;
       active_mean += delta / active_alloc_count;
-      active_m2 += delta * delta;
+      active_m2 += delta * (mem_size - total_mean);
 
       /* set the node's values appropriately */
       tmp_node -> size = mem_size;
