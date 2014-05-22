@@ -1,8 +1,7 @@
 /* CREATED 5-20-14 */
 
-/* Test program to show that a correct program remain correct
-   and should allocate/deallocate memory as normal, 
-   without errors.
+/* Test program to show that a correct program remains correct
+ * and allocates/deallocates memory as normal, without errors.
 */
 
 #include <stdio.h>
