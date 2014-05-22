@@ -52,6 +52,7 @@ static uintmax_t active_total_size = 0;
 static uintmax_t active_alloc_count = 0;
 static long double active_mean = 0;
 static long double active_m2 = 0;
+
 /* for calculating the total metrics */
 static uintmax_t total_size_allocated = 0;
 static uintmax_t total_alloc_count = 0;
@@ -80,7 +81,7 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
   long double delta = 0;
   
   if (mem_size > ALLOC_LIMIT) {
-    fprintf(stderr, "Excessive allocation size request of %d bytes\n", mem_size);
+    fprintf(stderr, "Excessive allocation size request of %d bytes\n", (int)mem_size);
     exit(1);
   } else {
     if (mem_size == 0)
@@ -123,8 +124,8 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
       /* insert the node into the linked list */
       if (head == NULL) {
         tmp_node -> link = NULL;
+        /* set up the callback for when program exits */
         if (total_alloc_count == 1 && atexit(slug_memstats) != 0) {
-                   /* set up the callback for when program exits */
           fprintf(stderr, "Unable to setup the memory statistics callback.\n");
           exit(1);
         }
@@ -169,9 +170,7 @@ void *slug_malloc ( size_t size, char *WHERE ) {
   char* filename = NULL;
 
   linenr = split(WHERE, &filename);
-  if (insert_node(linenr, size, filename, &address) == BAD) {
-    /* fprintf(stderr, "--- TODO ---\n"); */
-  }
+  insert_node(linenr, size, filename, &address);
 
   return address;
 }

@@ -1,7 +1,7 @@
 /* CREATED 5-20-14 */
 
 /* Test to show memory leaks: memory allocated 
-* by never deallocated
+*  by never deallocated.
 */
 
 #include <stdio.h>

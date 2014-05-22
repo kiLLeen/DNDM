@@ -1,7 +1,7 @@
 /* CREATED 5-20-14 */
 
-/* Test program to show that a correct program remain correct
-   and should allocate/deallocate memory as normal, 
+/* Test program to show that a correct program remains correct
+   and allocates/deallocatse memory as normal, 
    without errors.
 */
 
