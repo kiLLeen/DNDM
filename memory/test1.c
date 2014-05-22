@@ -11,15 +11,15 @@
 #include "slug.h"
 
 #define MAX_ALLOCATION 50
+#define SIZE_OF_ALLOC 1000
 
-int main (void) {
+int main() {
   void *mem[MAX_ALLOCATION] = { 0 };
-  size_t size = 1000;
-  int offset = size;
+  int offset = SIZE_OF_ALLOC;
   int i;
 
   for (i = 0; i < MAX_ALLOCATION; ++i) 
-    mem[i] = malloc(size);
+    mem[i] = malloc(SIZE_OF_ALLOC);
 
   for (i = 0; i < MAX_ALLOCATION; ++i) 
     free(mem[i]);
@@ -28,5 +28,5 @@ int main (void) {
   for (i = 0; i < MAX_ALLOCATION; ++i)
     free( mem + i + MAX_ALLOCATION + offset );
 
-  return (EXIT_SUCCESS);
+  return 0;
 }
