@@ -33,6 +33,7 @@ static uintmax_t active_total_size = 0;
 static uintmax_t active_alloc_count = 0;
 static long double active_mean = 0;
 static long double active_m2 = 0;
+
 /* for calculating the total metrics */
 static uintmax_t total_size_allocated = 0;
 static uintmax_t total_alloc_count = 0;
@@ -61,7 +62,7 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
   long double delta = 0;
   
   if (mem_size > ALLOC_LIMIT) {
-    fprintf(stderr, "Excessive allocation size request of %d bytes\n", mem_size);
+    fprintf(stderr, "Excessive allocation size request of %d bytes\n", (int)mem_size);
     exit(1);
   } else {
     if (mem_size == 0)
@@ -104,10 +105,13 @@ int insert_node (int linenr, size_t mem_size, char* file_name, void** address) {
       /* insert the node into the linked list */
       if (head == NULL) {
         tmp_node -> link = NULL;
-        if (total_alloc_count == 1 && atexit(slug_memstats) != 0) { /* set up the callback for when program exits */
+        
+	/* set up the callback for when program exits */
+	if (total_alloc_count == 1 && atexit(slug_memstats) != 0) { 
           fprintf(stderr, "Unable to setup the memory statistics callback.\n");
           exit(1);
         }
+
       } else
         tmp_node -> link = head;
       head = tmp_node;
@@ -149,10 +153,8 @@ void *slug_malloc ( size_t size, char *WHERE ) {
   char* filename = NULL;
 
   linenr = split(WHERE, &filename);
-  if (insert_node(linenr, size, filename, &address) == BAD) {
-    /* fprintf(stderr, "--- TODO ---\n"); */
-  }
-
+  insert_node(linenr, size, filename, &address);
+  
   return address;
 }
 
@@ -201,9 +203,16 @@ void slug_memstats(void) {
 
   /* dump each allocations info and calculate the total size allocated */
   while(curr != NULL) {
-    printf("address: %p\ntime: %ld.%06ld\nsize: %lu\nfile: %s\nline number: %ld\n-   -   -   -   -   -  -\n",
-           curr->address, curr->time_sec, curr->time_usec,(unsigned long)curr->size, curr->file_name,
+
+    printf("address: %p\ntime: %ld.%06ld\nsize: %lu\nfile: \
+%s\nline number: %ld\n-   -   -   -   -   -  -\n",
+           curr->address, 
+	   curr->time_sec, 
+	   curr->time_usec,
+	   (unsigned long)curr->size, 
+	   curr->file_name,
            curr->line_num);
+
     tmp = curr->link;
     free(curr->address);
     curr->address = NULL;
@@ -217,11 +226,13 @@ void slug_memstats(void) {
     printf("Number of active allocations: %" PRIuMAX "\n", active_alloc_count);
     printf("Total bytes currently allocated: %" PRIuMAX "\n", active_total_size);
     printf("Mean of memory sizes currently allocated: %Lg\n", active_mean);
+
     if (active_alloc_count > 1)
       printf("Standard deviation of memory sizes currently allocated: %lg\n",
              sqrt(active_m2 / (active_alloc_count - 1)));
     else
       printf("Standard deviation of memory sizes currently allocated: 0\n");
+
   } else
     printf("No memory leaks found.\n");
   
