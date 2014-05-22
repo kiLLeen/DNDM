@@ -21,3 +21,6 @@ This will create the slug.o file for linking with the test files.
 It will also link all test files with this object file to create
   the test file executables, test1 through test6, explained in
   the design document.
+
+We are using a late day for this assignment.
+
