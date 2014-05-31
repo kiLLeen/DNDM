@@ -1,3 +1,4 @@
+/* CREATED 5-27-14 */
 
 #include <lib.h>
 #include <stdio.h>
@@ -18,6 +19,7 @@ int main(int argc, char **argv) {
         return(-1);
     }
     count = metaread(infile->_file, buff, 1024);
+    buff[count] = '\0';
     fclose(infile);
 
     printf("%s", buff);
