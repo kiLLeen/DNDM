@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+cp ./original/unistd.h /usr/src/include/
+cp ./original/unistd.h /usr/include/
+cp ./original/vfsproto.h /usr/src/servers/vfs/proto.h
+cp ./original/vfstable.c /usr/src/servers/vfs/table.c
+cp ./original/vfsread.c /usr/src/servers/vfs/read.c
+cp ./original/vfswrite.c /usr/src/servers/vfs/write.c
+cp ./original/callnr.h /usr/src/include/minix/
+cp ./original/callnr.h /usr/include/minix/
+cp ./original/sysread.c /usr/src/lib/libc/sys-minix/read.c
+cp ./original/syswrite.c /usr/src/lib/libc/sys-minix/write.c
