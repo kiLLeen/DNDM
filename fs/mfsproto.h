@@ -78,7 +78,8 @@ void read_ahead(void);
 block_t read_map(struct inode *rip, off_t pos);
 zone_t rd_indir(struct buf *bp, int index);
 /* CHANGE START */
-int fs_metareadwrite(void);
+int fs_metaread(void);
+int fs_metawrite(void);
 /* CHANGE END */
 
 /* stadir.c */

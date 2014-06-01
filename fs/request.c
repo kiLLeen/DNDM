@@ -1085,7 +1085,7 @@ time_t modtime;
 *===========================================================================*/
 int req_metareadwrite(fs_e, inode_nr, rw_flag, user_e,
                   user_addr, num_of_bytes, new_posp, cum_iop)
-                  endpoint_t fs_e;
+endpoint_t fs_e;
 ino_t inode_nr;
 int rw_flag;
 endpoint_t user_e;
@@ -1098,7 +1098,7 @@ unsigned int *cum_iop;
     cp_grant_id_t grant_id;
     message m;
 
-    printf("inside vfs::req_metareadwrite()\n");
+    printf("inside req_metareadwrite\n");
 
     grant_id = cpf_grant_magic(fs_e, user_e, (vir_bytes)user_addr, num_of_bytes,
                                (rw_flag == READING ? CPF_WRITE : CPF_READ));
@@ -1113,8 +1113,13 @@ unsigned int *cum_iop;
     m.REQ_SEEK_POS_HI = 0;	/* Not used for now, so clear it. */
     m.REQ_NBYTES = num_of_bytes;
 
+    printf("sending request # %d\n", m.m_type);
+
     /* Send/rec request */
     r = fs_sendrec(fs_e, &m);
+
+    printf("fs_sendrec returned %d\n", r);
+
     cpf_revoke(grant_id);
 
     if (r == OK) {

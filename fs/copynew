@@ -10,6 +10,7 @@ cp ./vfswrite.c /usr/src/servers/vfs/write.c
 cp ./mfsproto.h /usr/src/servers/mfs/proto.h
 cp ./mfstable.c /usr/src/servers/mfs/table.c
 cp ./mfsread.c /usr/src/servers/mfs/read.c
+cp ./mfsmain.c /usr/src/servers/mfs/main.c
 cp ./vfsif.h /usr/src/include/minix/
 cp ./vfsif.h /usr/include/minix/
 cp ./callnr.h /usr/src/include/minix/
