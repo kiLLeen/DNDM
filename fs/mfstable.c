@@ -46,8 +46,8 @@ int (*fs_call_vec[])(void) = {
         fs_getdents,	    /* 31  */
         fs_statvfs,         /* 32  */
 /* CHANGE START */
-        fs_metareadwrite,	/* 33  */
-        fs_metareadwrite,	/* 34  */
+        fs_metaread,        /* 33  */
+        fs_metawrite,       /* 34  */
 /* CHANGE START */
 };
 

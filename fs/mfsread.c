@@ -683,9 +683,9 @@ int fs_getdents(void)
 
 /* CHANGE START*/
 /*===========================================================================*
-*				fs_readwrite				     *
+*				fs_metaread				     *
 *===========================================================================*/
-int fs_metareadwrite(void) {
+int fs_metaread(void) {
     int r, rw_flag, block_spec;
     int regular;
     cp_grant_id_t gid;
@@ -698,6 +698,125 @@ int fs_metareadwrite(void) {
 
     r = OK;
 
+    printf("inside fs_metaread()\n");
+
+    /* Find the inode referred */
+    if ((rip = find_inode(fs_dev, (ino_t)fs_m_in.REQ_INODE_NR)) == NULL)
+        return(EINVAL);
+
+    mode_word = rip->i_mode & I_TYPE;
+    regular = (mode_word == I_REGULAR || mode_word == I_NAMED_PIPE);
+    block_spec = (mode_word == I_BLOCK_SPECIAL ? 1 : 0);
+
+    /* Determine blocksize */
+    if (block_spec) {
+        block_size = get_block_size((dev_t)rip->i_zone[0]);
+        f_size = MAX_FILE_POS;
+    } else {
+        block_size = rip->i_sp->s_block_size;
+        f_size = rip->i_size;
+    }
+
+    /* Get the values from the request message */
+    rw_flag = (fs_m_in.m_type == REQ_READ ? READING : WRITING);
+    gid = (cp_grant_id_t)fs_m_in.REQ_GRANT;
+    position = (off_t)fs_m_in.REQ_SEEK_POS_LO;
+    nrbytes = (size_t)fs_m_in.REQ_NBYTES;
+
+    lmfs_reset_rdwt_err();
+
+    /* If this is file i/o, check we can write */
+    if (rw_flag == WRITING && !block_spec) {
+        if (rip->i_sp->s_rd_only)
+            return EROFS;
+
+        /* Check in advance to see if file will grow too big. */
+        if (position > (off_t)(rip->i_sp->s_max_size - nrbytes))
+            return(EFBIG);
+
+        /* Clear the zone containing present EOF if hole about
+        * to be created.  This is necessary because all unwritten
+        * blocks prior to the EOF must read as zeros.
+        */
+        if (position > f_size) clear_zone(rip, f_size, 0);
+    }
+
+    /* If this is block i/o, check we can write */
+    if (block_spec && rw_flag == WRITING &&
+        (dev_t)rip->i_zone[0] == superblock.s_dev && superblock.s_rd_only)
+        return EROFS;
+
+    cum_io = 0;
+    /* Split the transfer into chunks that don't span two blocks. */
+    while (nrbytes > 0) {
+        off = ((unsigned int)position) % block_size; /* offset in blk*/
+        chunk = min(nrbytes, block_size - off);
+
+        if (rw_flag == READING) {
+            bytes_left = f_size - position;
+            if (position >= f_size) break;	/* we are beyond EOF */
+            if (chunk > (unsigned int)bytes_left) chunk = bytes_left;
+        }
+
+        /* Read or write 'chunk' bytes. */
+        r = rw_chunk(rip, cvul64((unsigned long)position), off, chunk,
+                     nrbytes, rw_flag, gid, cum_io, block_size, &completed);
+
+        if (r != OK) break;	/* EOF reached */
+        if (lmfs_rdwt_err() < 0) break;
+
+        /* Update counters and pointers. */
+        nrbytes -= chunk;	/* bytes yet to be read */
+        cum_io += chunk;	/* bytes read so far */
+        position += (off_t)chunk;	/* position within the file */
+    }
+
+    fs_m_out.RES_SEEK_POS_LO = position; /* It might change later and the VFS
+                                         has to know this value */
+
+    /* On write, update file size and access time. */
+    if (rw_flag == WRITING) {
+        if (regular || mode_word == I_DIRECTORY) {
+            if (position > f_size) rip->i_size = position;
+        }
+    }
+
+    rip->i_seek = NO_SEEK;
+
+    if (lmfs_rdwt_err() != OK) r = lmfs_rdwt_err();	/* check for disk error */
+    if (lmfs_rdwt_err() == END_OF_FILE) r = OK;
+
+    /* even on a ROFS, writing to a device node on it is fine,
+    * just don't update the inode stats for it. And dito for reading.
+    */
+    if (r == OK && !rip->i_sp->s_rd_only) {
+        if (rw_flag == READING) rip->i_update |= ATIME;
+        if (rw_flag == WRITING) rip->i_update |= CTIME | MTIME;
+        IN_MARKDIRTY(rip);		/* inode is thus now dirty */
+    }
+
+    fs_m_out.RES_NBYTES = cum_io;
+
+    return(r);
+}
+/*===========================================================================*
+*				fs_metawrite				     *
+*===========================================================================*/
+int fs_metawrite(void) {
+    int r, rw_flag, block_spec;
+    int regular;
+    cp_grant_id_t gid;
+    off_t position, f_size, bytes_left;
+    unsigned int off, cum_io, block_size, chunk;
+    mode_t mode_word;
+    int completed;
+    struct inode *rip;
+    size_t nrbytes;
+
+    r = OK;
+
+    printf("inside fs_metawrite()\n");
+ 
     /* Find the inode referred */
     if ((rip = find_inode(fs_dev, (ino_t)fs_m_in.REQ_INODE_NR)) == NULL)
         return(EINVAL);

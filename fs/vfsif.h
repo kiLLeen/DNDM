@@ -94,6 +94,7 @@ typedef struct {
 } vfs_ucred_old_t;
 
 /* Request numbers */
+
 #define REQ_GETNODE	(VFS_BASE + 1)	/* Should be removed */
 #define REQ_PUTNODE	(VFS_BASE + 2)
 #define REQ_SLINK	(VFS_BASE + 3)
