@@ -334,8 +334,85 @@ size_t req_size;
 /*===========================================================================*
 *				do_metaread					     *
 *===========================================================================*/
+int do_meta_read_write(int rw_flag);
 int do_metaread() {
     printf("inside vfs::do_metaread()\n");
-    return(do_read_write(READING));
+    return(do_meta_read_write(READING));
+}
+
+/*===========================================================================*
+*				do_meta_read_write				     *
+*===========================================================================*/
+int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
+                    endpoint_t for_e);
+int do_meta_read_write(rw_flag)
+int rw_flag;			/* READING or WRITING */
+{
+    /* Perform read(fd, buffer, nbytes) or write(fd, buffer, nbytes) call. */
+    struct filp *f;
+    tll_access_t locktype;
+    int r;
+
+    scratch(fp).file.fd_nr = job_m_in.fd;
+    scratch(fp).io.io_buffer = job_m_in.buffer;
+    scratch(fp).io.io_nbytes = (size_t)job_m_in.nbytes;
+
+    locktype = (rw_flag == READING) ? VNODE_READ : VNODE_WRITE;
+    if ((f = get_filp(scratch(fp).file.fd_nr, locktype)) == NULL)
+        return(err_code);
+    if (((f->filp_mode) & (rw_flag == READING ? R_BIT : W_BIT)) == 0) {
+        unlock_filp(f);
+        return(f->filp_mode == FILP_CLOSED ? EIO : EBADF);
+    }
+    if (scratch(fp).io.io_nbytes == 0) {
+        unlock_filp(f);
+        return(0);	/* so char special files need not check for 0*/
+    }
+
+    r = meta_read_write(rw_flag, f, scratch(fp).io.io_buffer, scratch(fp).io.io_nbytes,
+                   who_e);
+
+    unlock_filp(f);
+    return(r);
+}
+
+/*===========================================================================*
+*				meta_read_write				     *
+*===========================================================================*/
+int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
+               endpoint_t for_e) {
+    register struct vnode *vp;
+    u64_t new_pos;
+    unsigned int cum_io, cum_io_incr;
+    int r;
+
+    vp = f->filp_vno;
+    r = OK;
+    cum_io = 0;
+
+    if (size > 1024) return(EINVAL);
+
+    if (S_ISFIFO(vp->v_mode))   /* Pipes */
+        return(-1);
+    if (S_ISCHR(vp->v_mode))	/* Character special files. */
+        return(-1);
+    if (S_ISBLK(vp->v_mode))	/* Block special files. */
+        return(-1);
+
+    /* Regular files */
+    /* Issue request */
+    r = req_metareadwrite(vp->v_fs_e, vp->v_inode_nr, rw_flag, for_e,
+                        buf, size, &new_pos, &cum_io_incr);
+
+    if (r >= 0) {
+        if (ex64hi(new_pos))
+            panic("meta_read_write: bad new pos");
+
+        cum_io += cum_io_incr;
+    }
+
+
+    if (r == OK) return(cum_io);
+    return(r);
 }
 /* CHANGE END */
