@@ -6,6 +6,7 @@ cp ./request.c /usr/src/servers/vfs/request.c
 cp ./vfsproto.h /usr/src/servers/vfs/proto.h
 cp ./vfstable.c /usr/src/servers/vfs/table.c
 cp ./vfsread.c /usr/src/servers/vfs/read.c
+cp ./comm.c /usr/src/servers/vfs/
 cp ./vfswrite.c /usr/src/servers/vfs/write.c
 cp ./mfsproto.h /usr/src/servers/mfs/proto.h
 cp ./mfstable.c /usr/src/servers/mfs/table.c

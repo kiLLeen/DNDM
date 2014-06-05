@@ -260,7 +260,7 @@ int req_readwrite(endpoint_t fs_e, ino_t inode_nr, u64_t pos, int rw_flag,
 	endpoint_t user_e, char *user_addr, unsigned int num_of_bytes,
 	u64_t *new_posp, unsigned int *cum_iop);
 /* CHANGE START */
-int req_metareadwrite(endpoint_t fs_e, ino_t inode_nr, int rw_flag,
+int req_metareadwrite(endpoint_t fs_e, ino_t inode_nr, u64_t pos, int rw_flag,
                   endpoint_t user_e, char *user_addr, unsigned int num_of_bytes,
                   u64_t *new_posp, unsigned int *cum_iop);
 /* CHANGE END */
