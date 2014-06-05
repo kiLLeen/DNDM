@@ -366,7 +366,7 @@ int rw_flag;			/* READING or WRITING */
     }
     if (scratch(fp).io.io_nbytes == 0) {
         unlock_filp(f);
-        return(0);	/* so char special files need not check for 0*/
+        return(0);	/* so char special files need not check for 0 */
     }
 
     r = meta_read_write(rw_flag, f, scratch(fp).io.io_buffer, scratch(fp).io.io_nbytes,
@@ -386,6 +386,8 @@ int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
     unsigned int cum_io, cum_io_incr;
     int r;
 
+    printf("inside meta_read_write\n");
+
     vp = f->filp_vno;
     r = OK;
     cum_io = 0;
@@ -401,7 +403,7 @@ int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
 
     /* Regular files */
     /* Issue request */
-    r = req_metareadwrite(vp->v_fs_e, vp->v_inode_nr, rw_flag, for_e,
+    r = req_metareadwrite(vp->v_fs_e, vp->v_inode_nr, 0, rw_flag, for_e,
                         buf, size, &new_pos, &cum_io_incr);
 
     if (r >= 0) {

@@ -40,9 +40,16 @@ int main(int argc, char *argv[])
 
 	/* Wait for request message. */
 	get_work(&fs_m_in);
+
+    if (fs_m_in.m_type == 169939969)
+        printf("inside main, got a REQ_METAREAD\n");
 	
 	transid = TRNS_GET_ID(fs_m_in.m_type);
 	fs_m_in.m_type = TRNS_DEL_ID(fs_m_in.m_type);
+
+    if (fs_m_in.m_type == REQ_METAREAD)
+        printf("inside main, got a REQ_METAREAD\n");
+
 	if (fs_m_in.m_type == 0) {
 		assert(!IS_VFS_FS_TRANSID(transid));
 		fs_m_in.m_type = transid;	/* Backwards compat. */

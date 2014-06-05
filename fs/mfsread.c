@@ -37,6 +37,9 @@ int fs_readwrite(void)
   
   r = OK;
   
+  if (fs_m_in.REQ_SEEK_POS_HI != 0)
+      printf("REQ_SEEK_POS_HI is %d\n", (off_t)fs_m_in.REQ_SEEK_POS_HI);
+  
   /* Find the inode referred */
   if ((rip = find_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
 	return(EINVAL);
