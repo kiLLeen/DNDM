@@ -22,7 +22,6 @@ int main(int argc, char **argv) {
     memcpy(buff, argv[2], size);
     buff[size++] = '\0';
     count = metawrite(infile->_file, buff, size);
-    printf("%d\n", count);
     if (size != count)
         printf("Warning: only %d bytes written.\n", count);
     fclose(infile);

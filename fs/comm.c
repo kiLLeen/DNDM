@@ -16,20 +16,11 @@ static int sendmsg(struct vmnt *vmp, struct worker_thread *wp)
 /* This is the low level function that sends requests to FS processes.
  */
   int r, transid;
-  int flag = 0;
 
   vmp->m_comm.c_cur_reqs++;	/* One more request awaiting a reply */
   transid = wp->w_tid + VFS_TRANSID;
 
-/*  if (wp->w_fs_sendrec->REQ_SEEK_POS_HI != 0) {
-      printf("sendmsg received hi pos %ld\n", wp->w_fs_sendrec->REQ_SEEK_POS_HI);
-      flag = 1;
-  }*/
-
   wp->w_fs_sendrec->m_type = TRNS_ADD_ID(wp->w_fs_sendrec->m_type, transid);
-
-  if (flag)
-      printf("m_type now %d\n", wp->w_fs_sendrec->m_type);
 
   wp->w_task = vmp->m_fs_e;
   if ((r = asynsend3(vmp->m_fs_e, wp->w_fs_sendrec, AMF_NOREPLY)) != OK) {
