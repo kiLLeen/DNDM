@@ -26,8 +26,7 @@ int do_write()
 *===========================================================================*/
 int do_meta_read_write(int rw_flag);
 int do_metawrite() {
-    /* Perform the write(fd, buffer, nbytes) system call. */
-    printf("inside vfs::do_metawrite()\n");
-    return(do_meta_read_write(WRITING));
+  /* Perform the write(fd, buffer, nbytes) system call. */
+  return(do_meta_read_write(WRITING));
 }
 /* CHANGE END */

@@ -35,16 +35,11 @@ int fs_readwrite(void)
   struct inode *rip;
   size_t nrbytes;
 
-  int b;
-  
   r = OK;
   
   /* Find the inode referred */
   if ((rip = find_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
 	return(EINVAL);
-
-  b = (block_t)rip->i_zone[0];
-  /*printf("fs_readwrite on block %d\n", b);*/
 
   mode_word = rip->i_mode & I_TYPE;
   regular = (mode_word == I_REGULAR || mode_word == I_NAMED_PIPE);
@@ -687,7 +682,6 @@ int fs_getdents(void)
 }
 
 /* CHANGE START*/
-
 /*===========================================================================*
 *				fs_metaread				     *
 *===========================================================================*/
@@ -701,11 +695,15 @@ int fs_metaread(void) {
 
     r = OK;
 
-    printf("inside fs_metaread()\n");
-
     /* Find the inode referred */
-    if ((rip = get_inode(fs_dev, (ino_t)fs_m_in.REQ_INODE_NR)) == NULL)
+    if ((rip = find_inode(fs_dev, (ino_t)fs_m_in.REQ_INODE_NR)) == NULL)
         return(EINVAL);
+
+    /* doesn't work with V1 MFS */
+    if (rip->i_sp->s_version == V1) {
+        fs_m_out.RES_NBYTES = 0;
+        return(OK);
+    }
 
     /* metawrite is only valid for regular files */
     /* if we are not a regular file, return 0 bytes read */
@@ -747,7 +745,6 @@ int fs_metaread(void) {
 
     return(r);
 }
-
 /*===========================================================================*
 *				fs_metawrite				     *
 *===========================================================================*/
@@ -756,18 +753,20 @@ int fs_metawrite(void) {
     cp_grant_id_t gid;
     struct inode *rip;
     size_t nrbytes;
-    block_t b, b0;
-    struct buf *bp, *bp0;
+    block_t b;
+    struct buf *bp;
 
     r = OK;
 
-    printf("inside fs_metawrite()\n");
-
     /* Find the inode referred */
-    if ((rip = get_inode(fs_dev, (ino_t)fs_m_in.REQ_INODE_NR)) == NULL)
+    if ((rip = find_inode(fs_dev, (ino_t)fs_m_in.REQ_INODE_NR)) == NULL)
         return(EINVAL);
 
-    printf("block size is %d\n", rip->i_sp->s_block_size);
+    /* doesn't work with V1 MFS */
+    if (rip->i_sp->s_version == V1) {
+        fs_m_out.RES_NBYTES = 0;
+        return(OK);
+    }
 
     /* metawrite is only valid for regular files */
     /* if we are not a regular file, return 0 bytes read */
@@ -781,9 +780,6 @@ int fs_metawrite(void) {
     if (rip->i_sp->s_rd_only)
         return EROFS;
 
-    if (rip->i_zone[9] == NO_ZONE)
-        printf("zone 9 does not exist\n");
-
     /* clear disk error flag */
     lmfs_reset_rdwt_err();
 
@@ -794,14 +790,6 @@ int fs_metawrite(void) {
     /* get block number and pointer to on disk block (in a BUF struct) */
     b = (block_t)rip->i_zone[9];
     bp = get_block(rip->i_dev, b, NORMAL);
-
-    b0 = (block_t)rip->i_zone[0];
-    bp0 = get_block(rip->i_dev, b0, NORMAL);
-    printf("zone 0 is block %d\n", b0);
-    printf("zone 9 is block %d\n", b);
-    printf("zone 0 data is %s\n", bp0->data);
-    printf("zone 9 data is %s\n", bp->data);
-
 
     /* clear the metadata region */
     zero_block(bp);
@@ -818,12 +806,8 @@ int fs_metawrite(void) {
     MARKDIRTY(bp);
     IN_MARKDIRTY(rip);
 
-    printf("writing data to disk\n");
-
     put_block(bp, FULL_DATA_BLOCK);
-    put_inode(rip);
-
-
+    
     /* check for disk error */
     if (lmfs_rdwt_err() != OK)
         r = lmfs_rdwt_err();
