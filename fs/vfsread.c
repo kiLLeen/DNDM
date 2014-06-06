@@ -382,7 +382,6 @@ int rw_flag;			/* READING or WRITING */
 int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
                endpoint_t for_e) {
     register struct vnode *vp;
-    u64_t new_pos;
     unsigned int cum_io, cum_io_incr;
     int r;
 
@@ -392,7 +391,8 @@ int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
     r = OK;
     cum_io = 0;
 
-    if (size > 1024) return(EINVAL);
+    if (size > 1024)
+        return(EINVAL);
 
     if (S_ISFIFO(vp->v_mode))   /* Pipes */
         return(-1);
@@ -403,18 +403,15 @@ int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
 
     /* Regular files */
     /* Issue request */
-    r = req_metareadwrite(vp->v_fs_e, vp->v_inode_nr, 0, rw_flag, for_e,
-                        buf, size, &new_pos, &cum_io_incr);
+    r = req_metareadwrite(vp->v_fs_e, vp->v_inode_nr, rw_flag, for_e,
+                        buf, size, &cum_io_incr);
 
-    if (r >= 0) {
-        if (ex64hi(new_pos))
-            panic("meta_read_write: bad new pos");
-
+    if (r >= 0)
         cum_io += cum_io_incr;
-    }
 
+    if (r == OK)
+        return(cum_io);
 
-    if (r == OK) return(cum_io);
-    return(r);
+    return (r);
 }
 /* CHANGE END */

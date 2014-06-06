@@ -1083,16 +1083,14 @@ time_t modtime;
 /*===========================================================================*
 *				req_metareadwrite				     *
 *===========================================================================*/
-int req_metareadwrite(fs_e, inode_nr, pos, rw_flag, user_e,
-                  user_addr, num_of_bytes, new_posp, cum_iop)
+int req_metareadwrite(fs_e, inode_nr, rw_flag, user_e,
+                  user_addr, num_of_bytes, cum_iop)
                   endpoint_t fs_e;
 ino_t inode_nr;
-u64_t pos;
 int rw_flag;
 endpoint_t user_e;
 char *user_addr;
 unsigned int num_of_bytes;
-u64_t *new_posp;
 unsigned int *cum_iop;
 {
     int r;
@@ -1101,19 +1099,16 @@ unsigned int *cum_iop;
 
     printf("inside req_metareadwrite()\n");
     
-    if (ex64hi(pos) != 0)
-        panic("req_readwrite: pos too large");
-
     grant_id = cpf_grant_magic(fs_e, user_e, (vir_bytes)user_addr, num_of_bytes,
                                (rw_flag == READING ? CPF_WRITE : CPF_READ));
     if (grant_id == -1)
-        panic("req_readwrite: cpf_grant_magic failed");
+        panic("req_metareadwrite: cpf_grant_magic failed");
 
     /* Fill in request message */
-    m.m_type = rw_flag == READING ? REQ_READ : REQ_WRITE;
+    m.m_type = rw_flag == READING ? REQ_METAREAD : REQ_METAWRITE;
     m.REQ_INODE_NR = inode_nr;
     m.REQ_GRANT = grant_id;
-    m.REQ_SEEK_POS_LO = ex64lo(pos);
+    m.REQ_SEEK_POS_LO = 0;  /* always start at position 0 */
     m.REQ_SEEK_POS_HI = 0;	/* Not used for now, so clear it. */
     m.REQ_NBYTES = num_of_bytes;
 
@@ -1121,11 +1116,9 @@ unsigned int *cum_iop;
     r = fs_sendrec(fs_e, &m);
     cpf_revoke(grant_id);
 
-    if (r == OK) {
-        /* Fill in response structure */
-        *new_posp = cvul64(m.RES_SEEK_POS_LO);
+    /* Fill in response structure */
+    if (r == OK)
         *cum_iop = m.RES_NBYTES;
-    }
 
     return(r);
 }
