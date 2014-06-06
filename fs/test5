@@ -1,0 +1,16 @@
+#!/bin/sh
+# Created 6/5/2014
+# This script runs du to display the space used on the disk. It then calls our 
+# test5c compiled c program which created 1000 files, adds metadata to each of
+# them, and then deletes the files. It then runs du again, so any difference 
+# will be immediately noticeable.
+#
+# run du
+echo "running du..."
+du
+# run the c program, test5c, to create many files with metadata
+echo "creating files..."
+./test5c
+# run du
+echo "running du..."
+du

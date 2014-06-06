@@ -1,0 +1,14 @@
+#!/bin/sh
+# Created 6/5/2014
+# This script adds the note “This file is awesome!” to the README.txt file,
+# reads it back, and compares it to the written metadata to see if it is the
+# same.
+metatag README.txt "This file is awesome!" # > /tmp/test_2 2>&1
+output=$(metacat README)
+if [ $output = "This file is awesome!" ]; then
+	echo "pass"
+	exit 0
+else
+	echo "fail"
+	echo 1
+fi

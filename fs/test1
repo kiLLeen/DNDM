@@ -1,0 +1,7 @@
+#!/bin/sh
+# Created 6/5/2014
+# This script writes metadata to itself, and then does an “ls”, showing that
+# the file system can handle (display) both files with metadata, and files 
+# without metadata.
+metatag test1 "(>\")> DNDM Are Minix Masters <(\"<)" # > /tmp/test_1 2>&1
+ls -l

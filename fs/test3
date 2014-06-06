@@ -1,0 +1,32 @@
+#!/bin/sh
+# Created 6/5/2014
+#This script creates a test file “test.txt”, with the contains
+# “this is a test”, and the metadata "and this is metadata". It then changes
+# the contents to “test data”. and reads the metadata, making sure it has not
+# changed. It then changed the metadata to “test metadata” and reads the normal
+# contents, making sure it has not changed.
+#
+# create the test.txt file with "this is a test" as its contents
+echo "this is a test" > test.txt
+# write some metadata, "and this is metadata", into test.txt
+metatag test.txt "and this is metadata"
+# change the contents of test.txt to "test data"
+echo "test data" > test.txt
+# read the contents of the metadata and confirm it is unchanged
+output=$(metacat test.txt)
+if [ $output = "and this is metadata" ]; then
+	# change the metadata of test.txt to "test metadata"
+	metatag test.txt "test metadata"
+	# confirm that the contents of test.txt are unchanged
+	output=$(cat test.txt)
+	if [ $output = "test data" ]; then
+		echo "pass"
+		exit 0
+	else
+		echo "fail"
+		exit 1
+	fi
+else
+	echo "fail"
+	exit 1
+fi
