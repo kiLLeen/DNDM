@@ -2,6 +2,7 @@
 #
 cp ./unistd.h /usr/src/include/
 cp ./unistd.h /usr/include/
+cp ./request.c /usr/src/servers/vfs/
 cp ./vfsproto.h /usr/src/servers/vfs/proto.h
 cp ./vfstable.c /usr/src/servers/vfs/table.c
 cp ./vfsread.c /usr/src/servers/vfs/read.c
