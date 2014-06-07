@@ -21,6 +21,18 @@ ssize_t read(int fd, void *buffer, size_t nbytes)
 }
 
 /* CHANGE START */
+/*  metaread */
+/*  
+ *  This function compiles a message to send to VFS for
+ *  a metaread system call.
+ *
+ *  @param  fd      File descriptor for the inode to read
+ *          buffer  Buffer to read data into on the top level
+ *          nbytes  Number of bytes to read.
+ *  @return number of bytes read if successful.
+ *          -1 if there was an error.
+ *
+ */
 ssize_t metaread(int fd, void *buffer, size_t nbytes) {
   message m;
 

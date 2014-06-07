@@ -334,6 +334,13 @@ size_t req_size;
 /*===========================================================================*
 *				do_metaread					     *
 *===========================================================================*/
+/*
+ *  Calls the helper function do_meta_read_write with the
+ *  correct read flag.
+ *  
+ *  @return number of bytes read if data was successfully read
+ *          -1 if there was an error
+ */
 int do_meta_read_write(int rw_flag);
 int do_metaread() {
     return(do_meta_read_write(READING));
@@ -342,8 +349,13 @@ int do_metaread() {
 /*===========================================================================*
 *				do_meta_read_write				     *
 *===========================================================================*/
+
 int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
                     endpoint_t for_e);
+/*  Sets up a buffer to send to meta_read_write.
+ *
+ *  @param  rw_flag Type of operation reading/writing
+ */
 int do_meta_read_write(rw_flag)
 int rw_flag;			/* READING or WRITING */
 {
@@ -378,6 +390,17 @@ int rw_flag;			/* READING or WRITING */
 /*===========================================================================*
 *				meta_read_write				     *
 *===========================================================================*/
+/*  Sets up a vnode for VFS and sends a request to read or write
+ *  based off parameters given.
+ *
+ *  @param  rw_flag Type of operation reading/writing
+ *          f       Global file descriptor
+ *          buf     Global job buffer
+ *          size    Size given to read/write
+ *          for_e   User endpoint
+ *  @return number of bytes read/written if successful
+ *          -1 if there was an error
+ */
 int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
                endpoint_t for_e) {
     register struct vnode *vp;

@@ -21,10 +21,17 @@ int do_write()
 }
 
 /* CHANGE START */
+int do_meta_read_write(int rw_flag);
 /*===========================================================================*
 *				do_metawrite				     *
 *===========================================================================*/
-int do_meta_read_write(int rw_flag);
+/*
+ *  Calls the helper function do_meta_read_write with the
+ *  correct write flag.
+ *
+ *  @return number of bytes written if data was successfully written
+ *          -1 if there was an error
+ */
 int do_metawrite() {
   /* Perform the write(fd, buffer, nbytes) system call. */
   return(do_meta_read_write(WRITING));
