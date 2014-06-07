@@ -24,6 +24,6 @@ can take a long time.
 When the process completes, type "reboot"
 then select the modified kernel (option 2)
 
-To build command line utilities and test files:
+To build command line utilities and test files, make sure you
+  are on the minix filesystem, not on a mounted directory, then:
 type "gmake"
-
