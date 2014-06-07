@@ -336,7 +336,6 @@ size_t req_size;
 *===========================================================================*/
 int do_meta_read_write(int rw_flag);
 int do_metaread() {
-    printf("inside vfs::do_metaread()\n");
     return(do_meta_read_write(READING));
 }
 
@@ -384,8 +383,6 @@ int meta_read_write(int rw_flag, struct filp *f, char *buf, size_t size,
     register struct vnode *vp;
     unsigned int cum_io, cum_io_incr;
     int r;
-
-    printf("inside meta_read_write\n");
 
     vp = f->filp_vno;
     r = OK;

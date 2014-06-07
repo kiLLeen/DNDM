@@ -5,20 +5,20 @@
 # the metadata of the copied file, and verifies that it did not change.
 #
 # read the metadata from test.txt
-output=$(metacat test.txt)
+output=$(./metacat test.txt)
 # copy test.txt to test2.txt
 cp test.txt test2.txt
 # confirm that test.txt's metadata didn't change
-output2=$(metacat test.txt)
-if [ $output = $output2 ]; then
+output2=$(./metacat test.txt)
+if [ "$output" = "$output2" ]; then
 	# confirm that test2.txt's metadata is the same as test.txt's
-	output2=$(metacat test2.txt)
-	if [ $output = $output2 ]; then
+	output2=$(./metacat test2.txt)
+	if [ "$output" = "$output2" ]; then
 		# change the metadata of test.txt to "blah blah metad"
-		metatag test.txt "blah blah metad"
+		./metatag test.txt "blah blah metad"
 		# confirm the metadata of test2.txt did not change
-		output = $(metacat test2.txt)
-		if [ $output = $output2 ]; then
+		output = $(./metacat test2.txt)
+		if [ "$output" = "$output2" ]; then
 			echo "pass"
 			exit 0
 		else
