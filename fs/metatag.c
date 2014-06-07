@@ -10,11 +10,11 @@ int main(int argc, char **argv) {
     char buff[1025];
     int count, size;
 
-    if (argc != 3) {
+    if (argc != 3) { /* call syntax invalid */
         printf("Usage: metatag filename \"tag\"\n");
         return(-1);
     }
-    infile = fopen(argv[1], "r+");
+    infile = fopen(argv[1], "r+"); /* must open read write */
     if (infile == NULL) {
         printf("Error opening file\n");
         return(-1);
@@ -28,5 +28,5 @@ int main(int argc, char **argv) {
     else if (size != count)
         printf("Warning: only %d bytes written.\n", count);
     fclose(infile);
-    return 0;
+    return (count < 0) ? -1 : 0;
 }

@@ -21,6 +21,19 @@ ssize_t write(int fd, const void *buffer, size_t nbytes)
 }
 
 /* CHANGE START */
+/*  metawrite */
+/*
+ *  This function compiles a message to send to VFS for
+ *  a metawrite system call.
+ *
+ *  @param  fd      File descriptor for the inode to write
+ *          buffer  Buffer containing the data that was
+ *                  requested
+ *          nbytes  Number of bytes to write.
+ *  @return number of bytes written if successful.
+ *          -1 if there was an error.
+ *
+ */
 ssize_t metawrite(int fd, const void *buffer, size_t nbytes) {
   message m;
 

@@ -9,11 +9,11 @@ int main(int argc, char **argv) {
     char buff[1025];
     int count;
 
-    if (argc != 2) {
+    if (argc != 2) { /* call syntax wrong */
         printf("Usage: metacat filename\n");
         return(-1);
     }
-    infile = fopen(argv[1], "rb");
+    infile = fopen(argv[1], "rb"); /* must open readonly */
     if (infile == NULL) {
         printf("Error opening file\n");
         return(-1);
