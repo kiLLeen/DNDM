@@ -13,7 +13,7 @@ ALLSRC   = ${CSOURCE} ${TESTSRC}
 ALLOBJ   = ${ALLSRC:.c=.o}
 ALLBIN   = ${ALLSRC:.c=}
 
-OTHERS   = copynew install unistd.h vfsproto.h vfstable.c vfsread.c vfswrite.c callnr.h sysread.c syswrite.c
+OTHERS   = copynew install unistd.h request.c vfsproto.h vfstable.c vfsread.c vfswrite.c mfsproto.h mfstable.c mfsread.c vfsif.h callnr.h sysread.c syswrite.c test1 test2 test3 test4 test5
 
 all : ${ALLBIN}
 

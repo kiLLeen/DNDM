@@ -2,6 +2,6 @@
 #
 ./copynew
 cd /usr/src/
-echo make build
+make build
 cd /usr/src/releasetools
 make hdboot
