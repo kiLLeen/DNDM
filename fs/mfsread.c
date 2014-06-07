@@ -685,6 +685,13 @@ int fs_getdents(void)
 /*===========================================================================*
 *				fs_metaread				     *
 *===========================================================================*/
+/* 
+ *  Uses the global input message fs_m_in to find the inode
+ *  through the requested VFS metaread. A block in zone 9 of the inode
+ *  is read and the data is copied to the user space buffer.
+ *  @return  0  if there were no errors
+ *          -1  if there were errors
+ */
 int fs_metaread(void) {
     int r;
     cp_grant_id_t gid;
@@ -749,6 +756,14 @@ int fs_metaread(void) {
 /*===========================================================================*
 *				fs_metawrite				     *
 *===========================================================================*/
+/*
+ *  Uses the global input message fs_m_in to find the inode
+ *  through the requested VFS metawrite. A block in zone 9 of the inode
+ *  is allocated if it does not already exist, and the data is copied from the
+ *  userspace buffer into the new block allocated in zone 9.
+ *  @return  0  if there were no errors
+ *          -1  if there were errors
+ */
 int fs_metawrite(void) {
     int r;
     cp_grant_id_t gid;

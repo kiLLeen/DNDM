@@ -1083,6 +1083,21 @@ time_t modtime;
 /*===========================================================================*
 *				req_metareadwrite				     *
 *===========================================================================*/
+/*
+ *  This is the main function for both reading and writing in
+ *  the VFS. A message is compiled to be sent to MFS, the
+ *  message type is then determined (read/write), it is
+ *  then sent to MFS, and a worker thread will await a
+ *  response.
+ *
+ *  @param  fs_e            File system endpoint
+ *          inode_nr        Index node number requested
+ *          rw_flag         Access of operation (read/write)
+ *          user_e          User space endpoint
+ *          user_addr       Address in userspace to copy buffer to/from
+ *          num_of_bytes    The number of bytes requested to be read/written
+ *          cum_iop         The number of bytes actually read/written
+ */
 int req_metareadwrite(fs_e, inode_nr, rw_flag, user_e,
                   user_addr, num_of_bytes, cum_iop)
                   endpoint_t fs_e;
@@ -1114,7 +1129,7 @@ unsigned int *cum_iop;
     r = fs_sendrec(fs_e, &m);
     cpf_revoke(grant_id);
 
-    /* Fill in response structure */
+    /* Place number of bytes read/written into cum_iop */
     if (r == OK)
         *cum_iop = m.RES_NBYTES;
 
